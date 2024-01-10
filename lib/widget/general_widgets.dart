@@ -40,65 +40,70 @@ Widget buildInputField(String labelText, IconData prefixIcon) {
 }
 
 Widget buildCard(String title, IconData iconData,
-    {bool showCount = true, int count = 0}) {
+    {bool showCount = true, int count = 0, VoidCallback? onTap}) {
   return AnimatedCard(
     direction: AnimatedCardDirection.right,
     duration: const Duration(milliseconds: 500),
     child: Card(
-      elevation: 4, // Adjust the elevation value as needed
+      color: Colors.white,
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  if (showCount) // Conditionally show count
-                    const SizedBox(height: 4.0),
-                  if (showCount)
-                    Container(
-                      alignment: Alignment.bottomLeft,
-                      padding: const EdgeInsets.only(left: 24.0),
-                      child: Text(
-                        '$count',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold,
-                        ),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                ],
+                    if (showCount) // Conditionally show count
+                      const SizedBox(height: 4.0),
+                    if (showCount)
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        padding: const EdgeInsets.only(left: 24.0),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: const BoxDecoration(
-                color: primarySwatch,
-                shape: BoxShape.circle,
+              Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: const BoxDecoration(
+                  color: primarySwatch,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  iconData,
+                  color: Colors.white,
+                  size: 24.0,
+                ),
               ),
-              child: Icon(
-                iconData,
-                color: Colors.white,
-                size: 24.0,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
   );
 }
+
