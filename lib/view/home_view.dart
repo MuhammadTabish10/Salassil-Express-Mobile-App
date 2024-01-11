@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
-import 'package:salsel_express/view/login_view.dart';
 import 'package:salsel_express/view/scan_result_view.dart';
 import 'package:salsel_express/view/show_tickets_view.dart';
 import 'package:salsel_express/widget/bottom_navigation_widget.dart';
@@ -73,7 +72,7 @@ class _HomeViewState extends State<HomeView> {
           ),
           ShowTicketsView(),
           const Placeholder(),
-          LoginView(),
+          // LoginView(),
         ],
         onPageChanged: (index) {
           setState(() {
@@ -106,6 +105,11 @@ class _HomeViewState extends State<HomeView> {
           restrictFormat: [
             BarcodeFormat.qr,
             BarcodeFormat.code128,
+            BarcodeFormat.code39,
+            BarcodeFormat.code93,
+            BarcodeFormat.ean8,
+            BarcodeFormat.ean13,
+            // Add more barcode formats if needed
           ],
         ),
       );

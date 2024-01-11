@@ -20,6 +20,8 @@ class _ShowTicketsState extends State<ShowTicketsView> {
     {'title': 'Ticket 5', 'name': 'Waroenk kita', 'status': 'Closed'},
   ];
 
+  String selectedStatus = 'All'; // Default filter value
+
   void _onViewPressed(int index) {
     Map<String, dynamic> selectedTicket = tickets[index];
 
@@ -55,39 +57,98 @@ class _ShowTicketsState extends State<ShowTicketsView> {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> filteredTickets = selectedStatus == 'All'
+        ? tickets
+        : tickets
+            .where((ticket) => ticket['status'] == selectedStatus)
+            .toList();
+
     return Scaffold(
       body: Container(
         color: Themes.backgroundColor,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: ListView.builder(
-            itemCount: tickets.length,
-            itemBuilder: (context, index) {
-              return AnimatedCard(
-                direction: AnimatedCardDirection.right,
+          child: ListView(
+            children: [
+              const Text(
+                'Filter by Status:',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12.0),
+              AnimatedCard(
+                direction: AnimatedCardDirection.top,
                 duration: const Duration(milliseconds: 500),
-                child: TicketCard(
-                  title: tickets[index]['title'] ?? '',
-                  name: tickets[index]['name'] ?? '',
-                  status: tickets[index]['status'] ?? '',
-                  button: TextButton(
-                    onPressed: () {
-                      _onViewPressed(index);
-                    },
-                    child: const Text(
-                      'View',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                child: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  onSelected: (value) {
+                    setState(() {
+                      selectedStatus = value;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return ['All', 'Open', 'Closed'].map((String value) {
+                      return PopupMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 12.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(selectedStatus),
+                        const Icon(Icons.arrow_drop_down),
+                      ],
+                    ),
                   ),
-                  onTap: () {
-                    // Handle tapping on a ticket card, if needed
-                  },
                 ),
-              );
-            },
+              ),
+              const SizedBox(height: 16.0),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: filteredTickets.length,
+                itemBuilder: (context, index) {
+                  return AnimatedCard(
+                    direction: AnimatedCardDirection.right,
+                    duration: const Duration(milliseconds: 500),
+                    child: TicketCard(
+                      title: filteredTickets[index]['title'] ?? '',
+                      name: filteredTickets[index]['name'] ?? '',
+                      status: filteredTickets[index]['status'] ?? '',
+                      button: TextButton(
+                        onPressed: () {
+                          _onViewPressed(index);
+                        },
+                        child: const Text(
+                          'View',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        // Handle tapping on a ticket card, if needed
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),

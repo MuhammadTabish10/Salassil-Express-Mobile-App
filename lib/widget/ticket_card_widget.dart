@@ -20,6 +20,12 @@ class TicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine border color based on status
+    Color borderColor = status == 'Open' ? Colors.green : Colors.red;
+
+    // Determine text color based on status
+    Color statusTextColor = status == 'Open' ? Colors.green : Colors.red;
+
     return AnimatedCard(
       direction: AnimatedCardDirection.right,
       duration: const Duration(milliseconds: 500),
@@ -27,6 +33,7 @@ class TicketCard extends StatelessWidget {
         color: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(
+          side: BorderSide(color: borderColor, width: 2.0), // Add border
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: InkWell(
@@ -61,9 +68,9 @@ class TicketCard extends StatelessWidget {
                     const SizedBox(height: 4.0),
                     Text(
                       status,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
-                        color: Colors.black54,
+                        color: statusTextColor, // Use determined text color
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_card/animated_card.dart';
+import 'package:salsel_express/util/themes.dart';
 
 class TicketDetailView extends StatelessWidget {
   final Map<String, dynamic> ticketDetails;
@@ -17,7 +18,15 @@ class TicketDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ticket Details'),
+        title: const Text(
+          'Ticket Details',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: primarySwatch,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white), 
       ),
       body: AnimatedCard(
         direction: AnimatedCardDirection.top,
@@ -32,7 +41,10 @@ class TicketDetailView extends StatelessWidget {
                 child: Text(
                   ticketTitle,
                   style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: primarySwatch,
+                  ),
                 ),
               ),
               Card(
@@ -47,37 +59,65 @@ class TicketDetailView extends StatelessWidget {
                     children: [
                       _buildDetailsSection('Shipper Details', [
                         _buildDetailItem(
-                            'Shipper Name', hardcodedData['shipperName']),
+                          'Shipper Name',
+                          hardcodedData['shipperName'],
+                        ),
                         _buildDetailItem(
-                            'Shipper Contact', hardcodedData['shipperContact']),
+                          'Shipper Contact',
+                          hardcodedData['shipperContact'],
+                        ),
                         _buildDetailItem(
-                            'Pickup Address', hardcodedData['pickupAddress']),
+                          'Pickup Address',
+                          hardcodedData['pickupAddress'],
+                        ),
                         _buildDetailItem(
-                            'Shipper Ref no', hardcodedData['shipperRefNo']),
+                          'Shipper Ref no',
+                          hardcodedData['shipperRefNo'],
+                        ),
                         _buildDetailItem(
-                            'Origin Country', hardcodedData['originCountry']),
+                          'Origin Country',
+                          hardcodedData['originCountry'],
+                        ),
                         _buildDetailItem(
-                            'Origin City', hardcodedData['originCity']),
+                          'Origin City',
+                          hardcodedData['originCity'],
+                        ),
                       ]),
                       _buildDetailsSection('Recipient Details', [
                         _buildDetailItem(
-                            'Recipient Name', hardcodedData['recipientName']),
+                          'Recipient Name',
+                          hardcodedData['recipientName'],
+                        ),
                         _buildDetailItem(
-                            'Contact no', hardcodedData['recipientContact']),
-                        _buildDetailItem('Delivery Address',
-                            hardcodedData['deliveryAddress']),
-                        _buildDetailItem('Destination Country',
-                            hardcodedData['destinationCountry']),
-                        _buildDetailItem('Destination City',
-                            hardcodedData['destinationCity']),
+                          'Contact no',
+                          hardcodedData['recipientContact'],
+                        ),
+                        _buildDetailItem(
+                          'Delivery Address',
+                          hardcodedData['deliveryAddress'],
+                        ),
+                        _buildDetailItem(
+                          'Destination Country',
+                          hardcodedData['destinationCountry'],
+                        ),
+                        _buildDetailItem(
+                          'Destination City',
+                          hardcodedData['destinationCity'],
+                        ),
                       ]),
                       _buildDetailsSection('Other Details', [
                         _buildDetailItem(
-                            'Department', hardcodedData['department']),
-                        _buildDetailItem('Department Category',
-                            hardcodedData['departmentCategory']),
+                          'Department',
+                          hardcodedData['department'],
+                        ),
                         _buildDetailItem(
-                            'Pickup Date', hardcodedData['pickupDate']),
+                          'Department Category',
+                          hardcodedData['departmentCategory'],
+                        ),
+                        _buildDetailItem(
+                          'Pickup Date',
+                          hardcodedData['pickupDate'],
+                        ),
                       ]),
                     ],
                   ),
@@ -95,10 +135,14 @@ class TicketDetailView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.only(bottom: 8.0),
           child: Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: primarySwatch,
+            ),
           ),
         ),
         ...details,
@@ -109,15 +153,27 @@ class TicketDetailView extends StatelessWidget {
 
   Widget _buildDetailItem(String label, dynamic value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            '$label:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+            ),
           ),
-          Text('$value'),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              '$value',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
+          ),
         ],
       ),
     );
