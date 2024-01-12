@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:animated_card/animated_card.dart';
 import 'package:salsel_express/util/themes.dart';
-import 'package:salsel_express/view/ticket_detail_view.dart';
+import 'package:salsel_express/view/job_detail_view.dart';
 import 'package:salsel_express/widget/card_widget.dart';
 
-class ShowTicketsView extends StatefulWidget {
-  const ShowTicketsView({Key? key}) : super(key: key);
+class ShowJobsView extends StatefulWidget {
+  const ShowJobsView({Key? key}) : super(key: key);
 
   @override
-  State<ShowTicketsView> createState() => _ShowTicketsState();
+  State<ShowJobsView> createState() => _ShowJobsState();
 }
 
-class _ShowTicketsState extends State<ShowTicketsView> {
-  List<Map<String, dynamic>> tickets = [
-    {'title': 'Ticket 1', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Ticket 2', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Ticket 3', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Ticket 4', 'name': 'Waroenk kita', 'status': 'Closed'},
-    {'title': 'Ticket 5', 'name': 'Waroenk kita', 'status': 'Closed'},
+class _ShowJobsState extends State<ShowJobsView> {
+  List<Map<String, dynamic>> awbList = [
+    {'title': 'Awb 1', 'name': 'Waroenk kita', 'status': 'Open'},
+    {'title': 'Awb 2', 'name': 'Waroenk kita', 'status': 'Open'},
+    {'title': 'Awb 3', 'name': 'Waroenk kita', 'status': 'Open'},
+    {'title': 'Awb 4', 'name': 'Waroenk kita', 'status': 'Open'},
+    {'title': 'Awb 5', 'name': 'Waroenk kita', 'status': 'Open'},
+    {'title': 'Awb 6', 'name': 'Waroenk kita', 'status': 'Closed'},
+    {'title': 'Awb 7', 'name': 'Waroenk kita', 'status': 'Closed'},
   ];
 
-  String selectedStatus = 'All'; // Default filter value
+  String selectedStatus = 'All';
 
   void _onViewPressed(int index) {
-    Map<String, dynamic> selectedTicket = tickets[index];
+    Map<String, dynamic> selectedAwb = awbList[index];
 
-    // Define hardcoded data here
     Map<String, dynamic> hardcodedData = {
       'shipperName': 'Waroenk kita',
       'shipperContact': '03354231123',
@@ -38,17 +39,14 @@ class _ShowTicketsState extends State<ShowTicketsView> {
       'deliveryAddress': 'Street 24 Block 18',
       'destinationCountry': 'Saudi Arabia',
       'destinationCity': 'Riyadh',
-      'department': 'Operation',
-      'departmentCategory': 'Delivery Complaint',
-      'pickupDate': '2023-12-29',
     };
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TicketDetailView(
-          ticketDetails: selectedTicket,
-          ticketTitle: selectedTicket['title'],
+        builder: (context) => JobDetailView(
+          jobDetails: selectedAwb,
+          jobTitle: selectedAwb['title'],
           hardcodedData: hardcodedData,
         ),
       ),
@@ -57,11 +55,9 @@ class _ShowTicketsState extends State<ShowTicketsView> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredTickets = selectedStatus == 'All'
-        ? tickets
-        : tickets
-            .where((ticket) => ticket['status'] == selectedStatus)
-            .toList();
+    List<Map<String, dynamic>> filteredAwb = selectedStatus == 'All'
+        ? awbList
+        : awbList.where((awb) => awb['status'] == selectedStatus).toList();
 
     return Scaffold(
       body: Container(
@@ -70,13 +66,35 @@ class _ShowTicketsState extends State<ShowTicketsView> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-              const Text(
-                'Filter by Status:',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Filter by Status:',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Handle AWB button press
+                      // Add your AWB button functionality here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: primarySwatch,
+                      elevation: 3.0,
+                    ),
+                    child: const Text(
+                      'Create AWB',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12.0),
               AnimatedCard(
@@ -120,15 +138,15 @@ class _ShowTicketsState extends State<ShowTicketsView> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredTickets.length,
+                itemCount: filteredAwb.length,
                 itemBuilder: (context, index) {
                   return AnimatedCard(
                     direction: AnimatedCardDirection.right,
                     duration: const Duration(milliseconds: 500),
                     child: CardWidget(
-                      title: filteredTickets[index]['title'] ?? '',
-                      name: filteredTickets[index]['name'] ?? '',
-                      status: filteredTickets[index]['status'] ?? '',
+                      title: filteredAwb[index]['title'] ?? '',
+                      name: filteredAwb[index]['name'] ?? '',
+                      status: filteredAwb[index]['status'] ?? '',
                       button: TextButton(
                         onPressed: () {
                           _onViewPressed(index);

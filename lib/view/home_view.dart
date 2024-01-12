@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/view/scan_result_view.dart';
+import 'package:salsel_express/view/show_jobs_view.dart';
 import 'package:salsel_express/view/show_tickets_view.dart';
 import 'package:salsel_express/widget/bottom_navigation_widget.dart';
 import 'package:salsel_express/widget/general_widgets.dart';
@@ -28,6 +29,7 @@ class _HomeViewState extends State<HomeView> {
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           getAppBarTitle(_currentIndex),
           style: const TextStyle(
@@ -59,11 +61,12 @@ class _HomeViewState extends State<HomeView> {
                   buildCard('Scan', Icons.qr_code_scanner,
                       showCount: false, onTap: () => _startScan()),
                   const SizedBox(height: 16.0),
-                  buildCard('My Jobs', Icons.assignment, count: 5),
+                  buildCard('My Jobs', Icons.assignment, count: 5, onTap: () {
+                    navigateToPage(2);
+                  }),
                   const SizedBox(height: 16.0),
                   buildCard('Tickets', Icons.confirmation_number, count: 8,
                       onTap: () {
-                    // Navigator.pushNamed(context, showTickets);
                     navigateToPage(1);
                   }),
                 ],
@@ -71,7 +74,7 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           ShowTicketsView(),
-          const Placeholder(),
+          ShowJobsView(),
           // LoginView(),
         ],
         onPageChanged: (index) {

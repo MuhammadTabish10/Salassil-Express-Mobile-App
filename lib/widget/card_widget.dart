@@ -2,14 +2,14 @@ import 'package:animated_card/animated_card.dart';
 import 'package:flutter/material.dart';
 import 'package:salsel_express/util/themes.dart';
 
-class TicketCard extends StatelessWidget {
+class CardWidget extends StatelessWidget {
   final String title;
   final String name;
   final String status;
   final Widget button;
   final VoidCallback? onTap;
 
-  const TicketCard({
+  const CardWidget({
     Key? key,
     required this.title,
     required this.name,

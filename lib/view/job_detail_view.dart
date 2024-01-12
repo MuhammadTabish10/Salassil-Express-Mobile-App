@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:animated_card/animated_card.dart';
 import 'package:salsel_express/util/themes.dart';
 
-class TicketDetailView extends StatelessWidget {
-  final Map<String, dynamic> ticketDetails;
-  final String ticketTitle;
+class JobDetailView extends StatelessWidget {
+  final Map<String, dynamic> jobDetails;
+  final String jobTitle;
   final Map<String, dynamic> hardcodedData;
 
-  const TicketDetailView({
+  const JobDetailView({
     Key? key,
-    required this.ticketDetails,
-    required this.ticketTitle,
+    required this.jobDetails,
+    required this.jobTitle,
     required this.hardcodedData,
   }) : super(key: key);
 
@@ -19,7 +19,7 @@ class TicketDetailView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          ticketTitle,
+          jobTitle,
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -92,20 +92,6 @@ class TicketDetailView extends StatelessWidget {
                         _buildDetailItem(
                           'Destination City',
                           hardcodedData['destinationCity'],
-                        ),
-                      ]),
-                      _buildDetailsSection('Other Details', [
-                        _buildDetailItem(
-                          'Department',
-                          hardcodedData['department'],
-                        ),
-                        _buildDetailItem(
-                          'Department Category',
-                          hardcodedData['departmentCategory'],
-                        ),
-                        _buildDetailItem(
-                          'Pickup Date',
-                          hardcodedData['pickupDate'],
                         ),
                       ]),
                     ],
