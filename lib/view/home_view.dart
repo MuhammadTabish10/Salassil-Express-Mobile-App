@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/view/scan_result_view.dart';
@@ -41,7 +42,7 @@ class _HomeViewState extends State<HomeView> {
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () {
-              // Handle the profile icon press, navigate to profile page, etc.
+              Navigator.of(context).pushNamed(userProfile);
             },
             iconSize: 28.0,
             color: colorScheme.onPrimary,
@@ -73,9 +74,8 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ),
-          ShowTicketsView(),
-          ShowJobsView(),
-          // LoginView(),
+          const ShowTicketsView(),
+          const ShowJobsView(),
         ],
         onPageChanged: (index) {
           setState(() {
@@ -87,7 +87,6 @@ class _HomeViewState extends State<HomeView> {
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 2) {
-            // My Jobs item is clicked (assuming 'My Jobs' is at index 2)
             _pageController.jumpToPage(index);
           } else if (index == 0) {
             _pageController.jumpToPage(index);
@@ -112,12 +111,10 @@ class _HomeViewState extends State<HomeView> {
             BarcodeFormat.code93,
             BarcodeFormat.ean8,
             BarcodeFormat.ean13,
-            // Add more barcode formats if needed
           ],
         ),
       );
 
-      // Navigate to a new page to display the scanned result
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -125,7 +122,6 @@ class _HomeViewState extends State<HomeView> {
         ),
       );
     } catch (e) {
-      // Handle exceptions (e.g., if the user denies camera permission)
       debugPrint('Error during scanning: $e');
     }
   }

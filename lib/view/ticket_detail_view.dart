@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_card/animated_card.dart';
+import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/util/themes.dart';
 
 class TicketDetailView extends StatelessWidget {
@@ -16,6 +17,7 @@ class TicketDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -24,6 +26,16 @@ class TicketDetailView extends StatelessWidget {
             color: Colors.white,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.of(context).pushNamed(userProfile);
+            },
+            iconSize: 28.0,
+            color: colorScheme.onPrimary,
+          ),
+        ],
         backgroundColor: primarySwatch,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:salsel_express/constant/routes.dart';
 import 'package:animated_card/animated_card.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/view/job_detail_view.dart';
@@ -48,6 +49,7 @@ class _ShowJobsState extends State<ShowJobsView> {
           jobDetails: selectedAwb,
           jobTitle: selectedAwb['title'],
           hardcodedData: hardcodedData,
+          selectedOption: "True",
         ),
       ),
     );
@@ -79,8 +81,7 @@ class _ShowJobsState extends State<ShowJobsView> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // Handle AWB button press
-                      // Add your AWB button functionality here
+                      Navigator.of(context).pushNamed(createAwb);
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
