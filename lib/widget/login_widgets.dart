@@ -1,7 +1,10 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
+import 'package:salsel_express/service/login_service.dart';
+import 'package:salsel_express/util/custom_toast.dart';
 // import 'package:salsel_express/util/custom_toast.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
@@ -24,6 +27,7 @@ Widget buildForgotPasswordText() {
 Widget buildPasswordInputField({
   required bool isPasswordVisible,
   required Function togglePasswordVisibility,
+  required  TextEditingController controller
 }) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -40,6 +44,7 @@ Widget buildPasswordInputField({
       ],
     ),
     child: TextFormField(
+      controller: controller,
       obscureText: !isPasswordVisible,
       decoration: InputDecoration(
         labelText: 'Password',
@@ -94,16 +99,25 @@ Widget buildEmailInputField(
 }
 
 Widget buildLoginButton(
-    BuildContext context, TextEditingController emailController) {
+    BuildContext context,
+    TokenProvider tokenProvider,
+    TextEditingController emailController,
+    TextEditingController passwordController) {
   return ElevatedButton(
-    onPressed: () {
-      // Validate email
-      // if (isValidEmail(emailController.text)) {
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(homeRoute, (route) => false);
-      // } else {
-      //   CustomToast.showAlert(context, 'Invalid email address');
-      // }
+    onPressed: () async {
+      LoginService result = await login(
+          tokenProvider, emailController.text, passwordController.text);
+
+      if (result.success) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          homeRoute,
+          (route) => false,
+        );
+        debugPrint('Login successful');
+      } else {
+        CustomToast.showAlert(context, result.errorMessage ?? 'Login failed');
+        debugPrint('Login failed');
+      }
     },
     style: ElevatedButton.styleFrom(
       primary: primarySwatch[500],

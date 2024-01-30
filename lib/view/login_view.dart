@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/widget/general_widgets.dart';
 import 'package:salsel_express/widget/login_widgets.dart';
@@ -10,12 +12,28 @@ class LoginView extends StatefulWidget {
   State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
   bool _isPasswordVisible = false;
-  final TextEditingController _emailController = TextEditingController();
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    TokenProvider tokenProvider = Provider.of<TokenProvider>(context, listen: false);
     double logoSize = MediaQuery.of(context).size.width * 0.6;
 
     return Scaffold(
@@ -50,9 +68,10 @@ class _LoginViewState extends State<LoginView> {
                   _isPasswordVisible = !_isPasswordVisible;
                 });
               },
+              controller: _passwordController,
             ),
             const SizedBox(height: 32.0),
-            buildLoginButton(context, _emailController),
+            buildLoginButton(context,tokenProvider, _emailController, _passwordController),
             const SizedBox(height: 16.0),
           ],
         ),
