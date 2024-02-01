@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const LoginView(),
       routes: routes,
+      initialRoute: '/login',
     );
   }
 }

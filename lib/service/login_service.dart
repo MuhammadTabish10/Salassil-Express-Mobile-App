@@ -35,10 +35,6 @@ Future<LoginService> login(TokenProvider tokenProvider, String email, String pas
     } else {
       // Login failed, handle the error
       final Map<String, dynamic> errorData = json.decode(response.body);
-
-        print('Login failed: ${response.statusCode}');
-        print('Response Body: ${response.body}');
-
       if (errorData.containsKey('phone')) {
         final String emailError = errorData['email'].toString();
         return LoginService(false, errorMessage: emailError);
@@ -51,8 +47,6 @@ Future<LoginService> login(TokenProvider tokenProvider, String email, String pas
       }
     }
   } catch (error) {
-    // Handle network or API errors
     return LoginService(false, errorMessage: 'Network or API error');
   }
-  
 }
