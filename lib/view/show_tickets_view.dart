@@ -18,6 +18,7 @@ class ShowTicketsView extends StatefulWidget {
 
 class _ShowTicketsState extends State<ShowTicketsView> {
   late Future<List<Ticket>> ticketsFuture;
+  late List<Ticket> filteredTickets;
   String selectedStatus = 'Open'; // Default filter value
 
   @override
@@ -45,11 +46,13 @@ class _ShowTicketsState extends State<ShowTicketsView> {
     });
   }
 
-  void _onViewPressed(int index) {
-    Navigator.of(context).pushNamed(
-      ticketDetail,
-    );
-  }
+void _onViewPressed(int index) {
+  String ticketId = filteredTickets[index].id.toString();
+  Navigator.of(context).pushNamed(
+    ticketDetail,
+    arguments: ticketId,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +125,7 @@ class _ShowTicketsState extends State<ShowTicketsView> {
                       );
                     } else {
                       // Show ticket cards when data is available
-                      List<Ticket> filteredTickets = snapshot.data!;
+                      filteredTickets = snapshot.data!;
                       return ListView.builder(
                         itemCount: filteredTickets.length,
                         itemBuilder: (context, index) {

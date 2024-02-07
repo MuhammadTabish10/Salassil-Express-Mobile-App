@@ -20,3 +20,23 @@ Future<List<Ticket>> getTickets(String status, String token) async {
     throw Exception('Failed to load tickets');
   }
 }
+
+Future<Ticket> getTicketById(String ticketId, String token) async {
+  final String apiUrl = getTicketByIdUrl(ticketId);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonData = json.decode(response.body);
+    return Ticket.fromJson(jsonData);
+  } else {
+    throw Exception('Failed to load ticket');
+  }
+}
