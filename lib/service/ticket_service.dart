@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:salsel_express/constant/api_end_points.dart';
 import 'package:salsel_express/model/ticket.dart';
 
-Future<List<Ticket>> getTickets(bool status, String token) async {
+Future<List<Ticket>> getTickets(String status, String token) async {
     String apiUrl = getAllTicketsUrl(status);
     final Uri uri = Uri.parse(apiUrl);
 

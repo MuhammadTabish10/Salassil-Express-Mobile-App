@@ -5,9 +5,9 @@ import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/service/login_service.dart';
 import 'package:salsel_express/util/custom_toast.dart';
-// import 'package:salsel_express/util/custom_toast.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 Widget buildForgotPasswordText() {
   return GestureDetector(
@@ -24,11 +24,10 @@ Widget buildForgotPasswordText() {
   );
 }
 
-Widget buildPasswordInputField({
-  required bool isPasswordVisible,
-  required Function togglePasswordVisibility,
-  required  TextEditingController controller
-}) {
+Widget buildPasswordInputField(
+    {required bool isPasswordVisible,
+    required Function togglePasswordVisibility,
+    required TextEditingController controller}) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     decoration: BoxDecoration(
@@ -99,45 +98,75 @@ Widget buildEmailInputField(
 }
 
 Widget buildLoginButton(
-    BuildContext context,
-    TokenProvider tokenProvider,
-    TextEditingController emailController,
-    TextEditingController passwordController) {
-  return ElevatedButton(
-    onPressed: () async {
-      LoginService result = await login(
-          tokenProvider, emailController.text, passwordController.text);
+  BuildContext context,
+  Future<LoginService> loginFuture,
+  TokenProvider tokenProvider,
+  TextEditingController emailController,
+  TextEditingController passwordController,
+) {
+  return Column(
+    children: [
+      const SizedBox(height: 16.0), 
+      FutureBuilder<LoginService>(
+        future: loginFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: SpinKitSpinningLines(color: primarySwatch),
+            );
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            return const SizedBox
+                .shrink();
+          }
+        },
+      ),
+      ElevatedButton(
+        onPressed: () async {
+          loginFuture = login(
+            tokenProvider,
+            emailController.text,
+            passwordController.text,
+          );
 
-      if (result.success) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          homeRoute,
-          (route) => false,
-        );
-        debugPrint('Login successful');
-      } else {
-        CustomToast.showAlert(context, result.errorMessage ?? 'Login failed');
-        debugPrint('Login failed');
-      }
-    },
-    style: ElevatedButton.styleFrom(
-      primary: primarySwatch[500],
-      onPrimary: Colors.white,
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-    ),
-    child: Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 16.0,
-        horizontal: 24.0,
-      ),
-      child: const Center(
-        child: Text(
-          'Login',
-          style: TextStyle(fontSize: 18),
+          LoginService result = await loginFuture;
+
+          if (result.success) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              homeRoute,
+              (route) => false,
+            );
+            debugPrint('Login successful');
+          } else {
+            CustomToast.showAlert(
+              context,
+              result.errorMessage ?? 'Login failed',
+            );
+            debugPrint('Login failed');
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          primary: primarySwatch[500],
+          onPrimary: Colors.white,
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: 16.0,
+            horizontal: 24.0,
+          ),
+          child: const Center(
+            child: Text(
+              'Login',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
         ),
       ),
-    ),
+    ],
   );
 }

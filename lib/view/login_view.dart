@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:salsel_express/config/token_provider.dart';
+import 'package:salsel_express/service/login_service.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/widget/general_widgets.dart';
 import 'package:salsel_express/widget/login_widgets.dart';
@@ -16,11 +17,13 @@ class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
   bool _isPasswordVisible = false;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
+  late Future<LoginService> _loginFuture;
 
   @override
   void initState() {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+    _loginFuture = Future.value(LoginService(false));
     super.initState();
   }
 
@@ -71,7 +74,7 @@ class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
               controller: _passwordController,
             ),
             const SizedBox(height: 32.0),
-            buildLoginButton(context,tokenProvider, _emailController, _passwordController),
+            buildLoginButton(context, _loginFuture, tokenProvider, _emailController, _passwordController),
             const SizedBox(height: 16.0),
           ],
         ),

@@ -21,10 +21,23 @@ class CardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine border color based on status
-    Color borderColor = status == 'Open' ? Colors.green : Colors.red;
+    Color borderColor = Colors.white;
 
     // Determine text color based on status
-    Color statusTextColor = status == 'Open' ? Colors.green : Colors.red;
+    Color statusTextColor = Colors.white;
+
+    if (status == 'Open') {
+      borderColor = Colors.green;
+      statusTextColor = Colors.green;
+    }
+    else if (status == 'Closed'){
+      borderColor = Colors.red;
+      statusTextColor = Colors.red;
+    } 
+    else if (status == 'On-Hold'){
+      borderColor = Colors.yellow;
+      statusTextColor = Colors.yellow;
+    }
 
     return AnimatedCard(
       direction: AnimatedCardDirection.right,

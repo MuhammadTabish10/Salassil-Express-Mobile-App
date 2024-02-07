@@ -1,7 +1,7 @@
-const String baseURL = 'http://192.168.1.228:8080/api/';
+const String baseURL = 'http://192.168.0.105:8080/api/';
 String loginUrl = '${baseURL}login';
 
-String getAllTicketsUrl(bool status) {
-  return '${baseURL}ticket?status=$status';
+String getAllTicketsUrl(String status) {
+  return '${baseURL}ticket/ticket-status/$status';
 }
 
