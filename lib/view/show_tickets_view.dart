@@ -35,7 +35,7 @@ class _ShowTicketsState extends State<ShowTicketsView> {
     } catch (error) {
       debugPrint('Error fetching tickets: $error');
       rethrow;
-    }
+    }  
   }
 
   void _onStatusSelected(String status) {

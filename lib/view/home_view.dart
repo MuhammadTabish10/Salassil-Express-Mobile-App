@@ -1,6 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
+import 'package:salsel_express/service/home_service.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/view/scan_result_view.dart';
@@ -26,6 +29,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    String token = Provider.of<TokenProvider>(context, listen: false).token;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -60,7 +64,8 @@ class _HomeViewState extends State<HomeView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   buildCard('Scan', Icons.qr_code_scanner,
-                      showCount: false, onTap: () => _startScan()),
+                      showCount: false,
+                      onTap: () => _startScan()),
                   const SizedBox(height: 16.0),
                   buildCard('My Jobs', Icons.assignment, count: 5, onTap: () {
                     navigateToPage(2);
