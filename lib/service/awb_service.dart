@@ -63,3 +63,41 @@ Future<List<City>> getCities(int id, String token) async {
     throw Exception('Failed to load Cities');
   }
 }
+
+Future<List<Awb>> getAllAwbByAssignedUser(String user, bool status, String token) async {
+    String apiUrl = getAwbByAssignedUserUrl(user,status);
+    final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },);
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = json.decode(response.body);
+    return jsonList.map((json) => Awb.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load awbs');
+  }
+}
+
+Future<Awb> getAwbById(String awbId, String token) async {
+  final String apiUrl = getAwbByIdUrl(awbId);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonData = json.decode(response.body);
+    return Awb.fromJson(jsonData);
+  } else {
+    throw Exception('Failed to load Awb');
+  }
+}

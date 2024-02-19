@@ -29,14 +29,15 @@ class CardWidget extends StatelessWidget {
     if (status == 'Open') {
       borderColor = Colors.green;
       statusTextColor = Colors.green;
-    }
-    else if (status == 'Closed'){
+    } else if (status == 'Closed') {
       borderColor = Colors.red;
       statusTextColor = Colors.red;
-    } 
-    else if (status == 'On-Hold'){
-      borderColor = Colors.yellow;
-      statusTextColor = Colors.yellow;
+    } else if (status == 'On-Hold') {
+      borderColor = Colors.orange;
+      statusTextColor = Colors.orange;
+    } else {
+      borderColor = Colors.green;
+      statusTextColor = Colors.green;
     }
 
     return AnimatedCard(

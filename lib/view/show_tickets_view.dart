@@ -9,7 +9,7 @@ import 'package:salsel_express/service/ticket_service.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/widget/card_widget.dart';
 
-class ShowTicketsView extends StatefulWidget {
+class ShowTicketsView extends StatefulWidget { 
   const ShowTicketsView({Key? key}) : super(key: key);
 
   @override

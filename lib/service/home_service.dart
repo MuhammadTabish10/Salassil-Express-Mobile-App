@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:salsel_express/constant/api_end_points.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/product_field_values.dart';
+import 'package:salsel_express/model/user.dart';
 
 Future<void> updateAwbStatusOnScan(
     int uniqueNumber, String status, String token) async {
@@ -62,5 +63,25 @@ Future<Awb> getAwbByUniqueNumber(int uniqueNumber, String token) async {
     return Awb.fromJson(jsonData);
   } else {
     throw Exception('Failed to load Awb by UniqueNumber');
+  }
+}
+
+Future<User> getLoggedInUser(String token) async {
+  String apiUrl = getLoggedInUserUrl;
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonData = json.decode(response.body);
+    return User.fromJson(jsonData);
+  } else {
+    throw Exception('Failed to load LoggedIn User');
   }
 }

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
+import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
 import 'package:animated_card/animated_card.dart';
+import 'package:salsel_express/model/awb.dart';
+import 'package:salsel_express/model/user.dart';
+import 'package:salsel_express/service/awb_service.dart';
+import 'package:salsel_express/service/home_service.dart';
 import 'package:salsel_express/util/themes.dart';
-import 'package:salsel_express/view/job_detail_view.dart';
 import 'package:salsel_express/widget/card_widget.dart';
 
 class ShowJobsView extends StatefulWidget {
@@ -13,54 +19,59 @@ class ShowJobsView extends StatefulWidget {
 }
 
 class _ShowJobsState extends State<ShowJobsView> {
-  List<Map<String, dynamic>> awbList = [
-    {'title': 'Awb 1', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Awb 2', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Awb 3', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Awb 4', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Awb 5', 'name': 'Waroenk kita', 'status': 'Open'},
-    {'title': 'Awb 6', 'name': 'Waroenk kita', 'status': 'Closed'},
-    {'title': 'Awb 7', 'name': 'Waroenk kita', 'status': 'Closed'},
-  ];
+  late Future<List<Awb>> awbsFuture = Future.value([]);
 
-  String selectedStatus = 'All';
+  @override
+  void initState() {
+    super.initState();
+    _loadAwbAndUser();
+  }
 
-  void _onViewPressed(int index) {
-    Map<String, dynamic> selectedAwb = awbList[index];
+  void _loadAwbAndUser() async {
+    try {
+      User user = await fetchLoggedInUser();
+      List<Awb> awbs = await fetchAwbs(true, user.name);
+      setState(() {
+        awbsFuture = Future.value(awbs);
+      });
+    } catch (e) {
+      debugPrint('Error fetching data: $e');
+    }
+  }
 
-    Map<String, dynamic> hardcodedData = {
-      'shipperName': 'Waroenk kita',
-      'shipperContact': '03354231123',
-      'pickupAddress': 'Y-02 Central Housing',
-      'shipperRefNo': 'SH9824',
-      'originCountry': 'Pakistan',
-      'originCity': 'Karachi',
-      'recipientName': 'Bob Anderson',
-      'recipientContact': '03323428867',
-      'deliveryAddress': 'Street 24 Block 18',
-      'destinationCountry': 'Saudi Arabia',
-      'destinationCity': 'Riyadh',
-    };
+  Future<User> fetchLoggedInUser() async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      User loggedInUser = await getLoggedInUser(token);
+      return loggedInUser;
+    } catch (error) {
+      debugPrint('Error fetching User: $error');
+      rethrow;
+    }
+  }
 
-    Navigator.push(
+  Future<List<Awb>> fetchAwbs(bool status, String? user) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<Awb> fetchedAwbs =
+          await getAllAwbByAssignedUser(user!, status, token);
+      return fetchedAwbs;
+    } catch (error) {
+      debugPrint('Error fetching awbs: $error');
+      rethrow;
+    }
+  }
+
+  void _onViewPressed(int id) {
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => JobDetailView(
-          jobDetails: selectedAwb,
-          jobTitle: selectedAwb['title'],
-          hardcodedData: hardcodedData,
-          selectedOption: "True",
-        ),
-      ),
+      jobDetail,
+      arguments: {'id': id.toString()}, // Convert int to String
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredAwb = selectedStatus == 'All'
-        ? awbList
-        : awbList.where((awb) => awb['status'] == selectedStatus).toList();
-
     return Scaffold(
       body: Container(
         color: Themes.backgroundColor,
@@ -105,7 +116,7 @@ class _ShowJobsState extends State<ShowJobsView> {
                   offset: const Offset(0, 50),
                   onSelected: (value) {
                     setState(() {
-                      selectedStatus = value;
+                      // selectedStatus = value;
                     });
                   },
                   itemBuilder: (BuildContext context) {
@@ -125,46 +136,63 @@ class _ShowJobsState extends State<ShowJobsView> {
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(selectedStatus),
-                        const Icon(Icons.arrow_drop_down),
+                        Text("selectedStatus"),
+                        Icon(Icons.arrow_drop_down),
                       ],
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 16.0),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredAwb.length,
-                itemBuilder: (context, index) {
-                  return AnimatedCard(
-                    direction: AnimatedCardDirection.right,
-                    duration: const Duration(milliseconds: 500),
-                    child: CardWidget(
-                      title: filteredAwb[index]['title'] ?? '',
-                      name: filteredAwb[index]['name'] ?? '',
-                      status: filteredAwb[index]['status'] ?? '',
-                      button: TextButton(
-                        onPressed: () {
-                          _onViewPressed(index);
-                        },
-                        child: const Text(
-                          'View',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+              FutureBuilder<List<Awb>>(
+                future: awbsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: SpinKitSpinningLines(color: primarySwatch),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    );
+                  } else if (snapshot.hasData) {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        return AnimatedCard(
+                          direction: AnimatedCardDirection.right,
+                          duration: const Duration(milliseconds: 500),
+                          child: CardWidget(
+                            title: snapshot.data![index].shipperName ?? '',
+                            name: '',
+                            status: snapshot.data![index].awbStatus ?? '',
+                            button: TextButton(
+                              onPressed: () {
+                                _onViewPressed(snapshot.data![index].id ?? 0);
+                              },
+                              child: const Text(
+                                'View',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              // Handle tapping on a ticket card, if needed
+                            },
                           ),
-                        ),
-                      ),
-                      onTap: () {
-                        // Handle tapping on a ticket card, if needed
+                        );
                       },
-                    ),
-                  );
+                    );
+                  } else {
+                    return Container(); // Placeholder, adjust as needed
+                  }
                 },
               ),
             ],
@@ -174,3 +202,160 @@ class _ShowJobsState extends State<ShowJobsView> {
     );
   }
 }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_spinkit/flutter_spinkit.dart';
+// import 'package:provider/provider.dart';
+// import 'package:salsel_express/config/token_provider.dart';
+// import 'package:salsel_express/constant/routes.dart';
+// import 'package:animated_card/animated_card.dart';
+// import 'package:salsel_express/model/awb.dart';
+// import 'package:salsel_express/model/user.dart';
+// import 'package:salsel_express/service/awb_service.dart';
+// import 'package:salsel_express/service/home_service.dart';
+// import 'package:salsel_express/util/themes.dart';
+// import 'package:salsel_express/view/job_detail_view.dart';
+// import 'package:salsel_express/widget/card_widget.dart';
+
+// class ShowJobsView extends StatefulWidget {
+//   const ShowJobsView({Key? key}) : super(key: key);
+
+//   @override
+//   State<ShowJobsView> createState() => _ShowJobsState();
+// }
+
+// class _ShowJobsState extends State<ShowJobsView> {
+//   late Future<List<Awb>> awbsFuture;
+//   bool _isLoading = false;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadAwbAndUser();
+//   }
+
+//   void _loadAwbAndUser() async {
+//     setState(() {
+//       _isLoading = true;
+//     });
+//     try {
+//       User user = await fetchLoggedInUser();
+//       List<Awb> awbs = await fetchAwbs(true, user.name);
+//       setState(() {
+//         _isLoading = false;
+//         awbsFuture = Future.value(awbs);
+//       });
+//     } catch (e) {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//       debugPrint('Error fetching data: $e');
+//     }
+//   }
+
+//   Future<User> fetchLoggedInUser() async {
+//     try {
+//       String token = Provider.of<TokenProvider>(context, listen: false).token;
+//       User loggedInUser = await getLoggedInUser(token);
+//       return loggedInUser;
+//     } catch (error) {
+//       debugPrint('Error fetching User: $error');
+//       rethrow;
+//     }
+//   }
+
+//   Future<List<Awb>> fetchAwbs(bool status, String? user) async {
+//     try {
+//       String token = Provider.of<TokenProvider>(context, listen: false).token;
+//       List<Awb> fetchedAwbs =
+//           await getAllAwbByAssignedUser(user!, status, token);
+//       return fetchedAwbs;
+//     } catch (error) {
+//       debugPrint('Error fetching awbs: $error');
+//       rethrow;
+//     }
+//   }
+
+//   void _onViewPressed(int id) {
+//     Navigator.pushNamed(
+//       context,
+//       jobDetail,
+//       arguments: id.toString(),
+//     );
+//   }
+
+//   @override
+//   @override
+//   Widget build(BuildContext context) {
+//     final colorScheme = Theme.of(context).colorScheme;
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text(
+//           "AWB Details",
+//           style: TextStyle(color: Colors.white),
+//         ),
+//         actions: [
+//           IconButton(
+//             icon: const Icon(Icons.account_circle),
+//             onPressed: () {
+//               Navigator.of(context).pushNamed(userProfile);
+//             },
+//             iconSize: 28.0,
+//             color: colorScheme.onPrimary,
+//           ),
+//         ],
+//         backgroundColor: primarySwatch,
+//         elevation: 0,
+//         iconTheme: const IconThemeData(color: Colors.white),
+//       ),
+//       body: AnimatedCard(
+//         direction: AnimatedCardDirection.top,
+//         duration: const Duration(milliseconds: 500),
+//         child: FutureBuilder<List<Awb>>(
+//           future: awbsFuture,
+//           builder: (context, snapshot) {
+//             if (snapshot.connectionState == ConnectionState.waiting) {
+//               return const Center(
+//                   child: SpinKitSpinningLines(color: primarySwatch));
+//             } else if (snapshot.hasError) {
+//               return Center(child: Text('Error: ${snapshot.error}'));
+//             } else {
+//               List<Awb>? awbs = snapshot.data;
+//               return ListView.builder(
+//                 itemCount: awbs?.length ?? 0,
+//                 itemBuilder: (context, index) {
+//                   Awb awb = awbs![index];
+//                   return AnimatedCard(
+//                     direction: AnimatedCardDirection.right,
+//                     duration: const Duration(milliseconds: 500),
+//                     child: CardWidget(
+//                       title: awb.shipperName ?? '',
+//                       name: '',
+//                       status: awb.awbStatus ?? '',
+//                       button: TextButton(
+//                         onPressed: () {
+//                           _onViewPressed(awb.id!);
+//                         },
+//                         child: const Text(
+//                           'View',
+//                           style: TextStyle(
+//                             color: Colors.white,
+//                             fontWeight: FontWeight.bold,
+//                           ),
+//                         ),
+//                       ),
+//                       onTap: () {
+//                         // Handle tapping on a ticket card, if needed
+//                       },
+//                     ),
+//                   );
+//                 },
+//               );
+//             }
+//           },
+//         ),
+//       ),
+//     );
+//   }
+// }

@@ -1,6 +1,7 @@
-const String baseURL = 'http://192.168.0.104:8080/api/';
+const String baseURL = 'http://192.168.0.105:8080/api/';
 const String loginUrl = '${baseURL}login';
 const String createAwbUrl = '${baseURL}awb';
+const String getLoggedInUserUrl = '${baseURL}user/current-user';
 
 String getAllTicketsUrl(String status) {
   return '${baseURL}ticket/ticket-status/$status';
@@ -8,6 +9,10 @@ String getAllTicketsUrl(String status) {
 
 String getTicketByIdUrl(String id) {
   return '${baseURL}ticket/$id';
+}
+
+String getAwbByIdUrl(String id) {
+  return '${baseURL}awb/$id';
 }
 
 String updateAwbStatusByScanUrl(int uniqueNumber, String status) {
@@ -30,3 +35,6 @@ String getAwbByUniqueNumberUrl(int uniqueNumber) {
   return '${baseURL}awb/unique-number/$uniqueNumber';
 }
 
+String getAwbByAssignedUserUrl(String user, bool status) {
+  return '${baseURL}awb/assigned-user?status=$status&user=$user';
+}

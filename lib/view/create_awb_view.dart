@@ -21,8 +21,10 @@ class CreateAwbView extends StatefulWidget {
 
 class _CreateAwbState extends State<CreateAwbView> {
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
-  late Future<List<Country>> countriesFuture;
-  late Future<List<City>> citiesFuture;
+  late Future<List<Country>> originCountriesFuture;
+  late Country? originCountry;
+  late Future<List<Country>> destinationCountriesFuture;
+  late Country? destinationCountry;
   String? originCountryValue;
   String? originCityValue;
   String? destinationCountryValue;
@@ -69,7 +71,10 @@ class _CreateAwbState extends State<CreateAwbView> {
   @override
   void initState() {
     super.initState();
-    countriesFuture = fetchCountries("true");
+    originCountry = null;
+    destinationCountry = null;
+    originCountriesFuture = fetchCountries("true");
+    destinationCountriesFuture = fetchCountries("true");
   }
 
   Future<List<Country>> fetchCountries(String status) async {
@@ -83,7 +88,7 @@ class _CreateAwbState extends State<CreateAwbView> {
     }
   }
 
-    Future<List<City>> fetchCitiesByCountry(int id) async {
+  Future<List<City>> fetchCitiesByCountry(int id) async {
     try {
       String token = Provider.of<TokenProvider>(context, listen: false).token;
       List<City> fetchedCites = await getCities(id, token);
@@ -149,19 +154,8 @@ class _CreateAwbState extends State<CreateAwbView> {
                     shipperContactNumberController,
                   ),
                   const SizedBox(height: 16),
-                  // buildDropdownField(
-                  //   'Origin Country',
-                  //   Icons.flag,
-                  //   ['Pakistan', 'India', 'Saudi'],
-                  //   originCountryValue,
-                  //   (newValue) {
-                  //     setState(() {
-                  //       originCountryValue = newValue!;
-                  //     });
-                  //   },
-                  // ),
                   FutureBuilder<List<Country>>(
-                    future: countriesFuture,
+                    future: originCountriesFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
@@ -170,9 +164,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                       } else if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       } else {
-                        List<String> countryNames = snapshot.data!
-                            .map((country) => country.name!)
-                            .toList();
+                        List<Country> countries = snapshot.data!;
+                        List<String> countryNames =
+                            countries.map((country) => country.name!).toList();
                         return buildDropdownField(
                           'Origin Country',
                           Icons.flag,
@@ -181,6 +175,10 @@ class _CreateAwbState extends State<CreateAwbView> {
                           (newValue) {
                             setState(() {
                               originCountryValue = newValue;
+                              originCountry = countries.firstWhere(
+                                  (country) => country.name == newValue);
+                              // Reset city value when country changes
+                              originCityValue = null;
                             });
                           },
                         );
@@ -188,18 +186,34 @@ class _CreateAwbState extends State<CreateAwbView> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  // buildDropdownField(
-                  //   'Origin City',
-                  //   Icons.location_city,
-                  //   ['Karachi', 'Lahore', 'Islamabad'],
-                  //   originCityValue,
-                  //   (newValue) {
-                  //     setState(() {
-                  //       originCityValue = newValue!;
-                  //     });
-                  //   },
-                  // ),
-
+                  FutureBuilder<List<City>>(
+                    future: originCountry != null
+                        ? fetchCitiesByCountry(originCountry!.id!)
+                        : Future.value([]),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<String> cityNames =
+                            snapshot.data!.map((city) => city.name!).toList();
+                        return buildDropdownField(
+                          'Origin City',
+                          Icons.location_city,
+                          cityNames,
+                          originCityValue,
+                          (newValue) {
+                            setState(() {
+                              originCityValue = newValue;
+                            });
+                          },
+                        );
+                      }
+                    },
+                  ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Pickup Address',
@@ -237,27 +251,64 @@ class _CreateAwbState extends State<CreateAwbView> {
                     recipientsContactNumberController,
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Destination Country',
-                    Icons.flag,
-                    ['Pakistan', 'India', 'Saudi'],
-                    destinationCountryValue,
-                    (newValue) {
-                      setState(() {
-                        destinationCountryValue = newValue!;
-                      });
+                  FutureBuilder<List<Country>>(
+                    future: destinationCountriesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<Country> countries = snapshot.data!;
+                        List<String> countryNames =
+                            countries.map((country) => country.name!).toList();
+                        return buildDropdownField(
+                          'Destination Country',
+                          Icons.flag,
+                          countryNames,
+                          destinationCountryValue,
+                          (newValue) {
+                            setState(() {
+                              destinationCountryValue = newValue;
+                              destinationCountry = countries.firstWhere(
+                                  (country) => country.name == newValue);
+                              // Reset city value when country changes
+                              destinationCityValue = null;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Destination City',
-                    Icons.location_city,
-                    ['Karachi', 'Lahore', 'Islamabad'],
-                    destinationCityValue,
-                    (newValue) {
-                      setState(() {
-                        destinationCityValue = newValue!;
-                      });
+                  FutureBuilder<List<City>>(
+                    future: destinationCountry != null
+                        ? fetchCitiesByCountry(destinationCountry!.id!)
+                        : Future.value([]),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<String> cityNames =
+                            snapshot.data!.map((city) => city.name!).toList();
+                        return buildDropdownField(
+                          'Destination City',
+                          Icons.location_city,
+                          cityNames,
+                          destinationCityValue,
+                          (newValue) {
+                            setState(() {
+                              destinationCityValue = newValue;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),

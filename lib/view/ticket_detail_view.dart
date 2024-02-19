@@ -21,7 +21,7 @@ class _TicketDetailViewState extends State<TicketDetailView> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState();   
   }
 
   @override

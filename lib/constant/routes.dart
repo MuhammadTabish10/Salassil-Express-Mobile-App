@@ -23,11 +23,7 @@ final Map<String, WidgetBuilder> routes = {
   showTickets: (context) => const ShowTicketsView(),
   ticketDetail: (context) => const TicketDetailView(),
   showJobs: (context) => const ShowJobsView(),
-  jobDetail: (context) => const JobDetailView(
-        jobDetails: {},
-        hardcodedData: {},
-        jobTitle: '', selectedOption: '',
-      ),
+  jobDetail: (context) => const JobDetailView(),
   createAwb: (context) => const CreateAwbView(),
   userProfile: (context) => const UserProfileView()
 };
