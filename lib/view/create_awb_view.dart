@@ -8,7 +8,11 @@ import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/city.dart';
 import 'package:salsel_express/model/country.dart';
+import 'package:salsel_express/model/product_field_values.dart';
+import 'package:salsel_express/model/product_type.dart';
+import 'package:salsel_express/model/service_type.dart';
 import 'package:salsel_express/service/awb_service.dart';
+import 'package:salsel_express/service/home_service.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/widget/general_widgets.dart';
 
@@ -21,10 +25,17 @@ class CreateAwbView extends StatefulWidget {
 
 class _CreateAwbState extends State<CreateAwbView> {
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+
   late Future<List<Country>> originCountriesFuture;
-  late Country? originCountry;
   late Future<List<Country>> destinationCountriesFuture;
+  late Future<List<ProductType>> productTypeFuture;
+  late Future<List<ProductFieldValues>> currenciesFuture;
+  late Future<List<ProductFieldValues>> dutyAndTaxesBillToFuture;
+  late Future<List<ProductFieldValues>> requestTypeFuture;
+  late Country? originCountry;
   late Country? destinationCountry;
+  late ProductType? productType;
+
   String? originCountryValue;
   String? originCityValue;
   String? destinationCountryValue;
@@ -73,8 +84,13 @@ class _CreateAwbState extends State<CreateAwbView> {
     super.initState();
     originCountry = null;
     destinationCountry = null;
+    productType = null;
     originCountriesFuture = fetchCountries("true");
     destinationCountriesFuture = fetchCountries("true");
+    productTypeFuture = fetchProductTypes("true");
+    currenciesFuture = fetchCurrencies("Currency");
+    dutyAndTaxesBillToFuture = fetchDutyAndTaxesBillTo("Duty And Tax Billing");
+    requestTypeFuture = fetchRequestTypes("Request Type");
   }
 
   Future<List<Country>> fetchCountries(String status) async {
@@ -95,6 +111,68 @@ class _CreateAwbState extends State<CreateAwbView> {
       return fetchedCites;
     } catch (error) {
       debugPrint('Error fetching cities: $error');
+      rethrow;
+    }
+  }
+
+  Future<List<ProductType>> fetchProductTypes(String status) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<ProductType> fetchedProductTypes =
+          await getAllProductType(status, token);
+      return fetchedProductTypes;
+    } catch (error) {
+      debugPrint('Error fetching productTypes: $error');
+      rethrow;
+    }
+  }
+
+  Future<List<ServiceType>> fetchServiceTypesByProductType(int id) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<ServiceType> fetchedServiceTypes =
+          await getAllServiceType(id, token);
+      return fetchedServiceTypes;
+    } catch (error) {
+      debugPrint('Error fetching ServiceTypes: $error');
+      rethrow;
+    }
+  }
+
+  Future<List<ProductFieldValues>> fetchCurrencies(String productFeild) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<ProductFieldValues> fetchedCurrencies =
+          await getProductFieldValues(productFeild, token);
+      return fetchedCurrencies;
+    } catch (error) {
+      debugPrint('Error fetching currencies: $error');
+      rethrow;
+    }
+  }
+
+  Future<List<ProductFieldValues>> fetchDutyAndTaxesBillTo(
+      String productFeild) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<ProductFieldValues> fetchedDutyAndTaxesBillTo =
+          await getProductFieldValues(productFeild, token);
+      return fetchedDutyAndTaxesBillTo;
+    } catch (error) {
+      debugPrint('Error fetching dutyAndTaxesBillTo: $error');
+      rethrow;
+    }
+  }
+
+  Future<List<ProductFieldValues>> fetchRequestTypes(
+      String productFeild) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<ProductFieldValues> fetchedRequestTypes =
+          await getProductFieldValues(productFeild, token);
+      return fetchedRequestTypes;
+    } catch (error) {
+      debugPrint('Error fetching RequestTypes: $error');
       rethrow;
     }
   }
@@ -356,39 +434,96 @@ class _CreateAwbState extends State<CreateAwbView> {
                     context,
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Product Type',
-                    Icons.local_shipping,
-                    ['Product 1', 'Product 2', 'Product 3'],
-                    productTypeValue,
-                    (newValue) {
-                      setState(() {
-                        productTypeValue = newValue!;
-                      });
+                  FutureBuilder<List<ProductType>>(
+                    future: productTypeFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<ProductType> productTypes = snapshot.data!;
+                        List<String> productTypesNames = productTypes
+                            .map((productType) => productType.name!)
+                            .toList();
+                        return buildDropdownField(
+                          'Product Type',
+                          Icons.local_shipping,
+                          productTypesNames,
+                          productTypeValue,
+                          (newValue) {
+                            setState(() {
+                              productTypeValue = newValue;
+                              productType = productTypes.firstWhere(
+                                  (productType) =>
+                                      productType.name == newValue);
+                              serviceTypeValue = null;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Service Type',
-                    Icons.local_shipping,
-                    ['Service 1', 'Service 2', 'Service 3'],
-                    serviceTypeValue,
-                    (newValue) {
-                      setState(() {
-                        serviceTypeValue = newValue!;
-                      });
+                  FutureBuilder<List<ServiceType>>(
+                    future: productType != null
+                        ? fetchServiceTypesByProductType(productType!.id!)
+                        : Future.value([]),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<String> serviceTypeNames = snapshot.data!
+                            .map((service) => service.name!)
+                            .toList();
+                        return buildDropdownField(
+                          'Service Type',
+                          Icons.local_shipping,
+                          serviceTypeNames,
+                          serviceTypeValue,
+                          (newValue) {
+                            setState(() {
+                              serviceTypeValue = newValue;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Request Type',
-                    Icons.swap_horiz,
-                    ['Pickup', 'Dropff'],
-                    requestTypeValue,
-                    (newValue) {
-                      setState(() {
-                        requestTypeValue = newValue!;
-                      });
+                  FutureBuilder<List<ProductFieldValues>>(
+                    future: requestTypeFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<ProductFieldValues> requestTypeList =
+                            snapshot.data!;
+                        List<String> requestTypeNames = requestTypeList
+                            .map((requestType) => requestType.name!)
+                            .toList();
+                        return buildDropdownField(
+                          'Request Type',
+                          Icons.swap_horiz,
+                          requestTypeNames,
+                          requestTypeValue,
+                          (newValue) {
+                            setState(() {
+                              requestTypeValue = newValue;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
@@ -416,27 +551,64 @@ class _CreateAwbState extends State<CreateAwbView> {
                     amountController,
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Currency',
-                    Icons.attach_money,
-                    ['Pickup', 'Dropff'],
-                    currencyValue,
-                    (newValue) {
-                      setState(() {
-                        currencyValue = newValue!;
-                      });
+                  FutureBuilder<List<ProductFieldValues>>(
+                    future: currenciesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<ProductFieldValues> currencies = snapshot.data!;
+                        List<String> currenciesNames = currencies
+                            .map((currency) => currency.name!)
+                            .toList();
+                        return buildDropdownField(
+                          'Currency',
+                          Icons.attach_money,
+                          currenciesNames,
+                          currencyValue,
+                          (newValue) {
+                            setState(() {
+                              currencyValue = newValue;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
-                  buildDropdownField(
-                    'Duty and Taxes Bill To',
-                    Icons.account_balance_wallet,
-                    ['bill Shipper', 'Bill Consignee'],
-                    dutyAndTaxesBillToValue,
-                    (newValue) {
-                      setState(() {
-                        dutyAndTaxesBillToValue = newValue!;
-                      });
+                  FutureBuilder<List<ProductFieldValues>>(
+                    future: dutyAndTaxesBillToFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<ProductFieldValues> dutyAndTaxesBillToList =
+                            snapshot.data!;
+                        List<String> dutyAndTaxesBillToNames =
+                            dutyAndTaxesBillToList
+                                .map((dutyAndTaxesBillTo) =>
+                                    dutyAndTaxesBillTo.name!)
+                                .toList();
+                        return buildDropdownField(
+                          'Duty And Taxes Bill To',
+                          Icons.account_balance_wallet,
+                          dutyAndTaxesBillToNames,
+                          dutyAndTaxesBillToValue,
+                          (newValue) {
+                            setState(() {
+                              dutyAndTaxesBillToValue = newValue;
+                            });
+                          },
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 16),

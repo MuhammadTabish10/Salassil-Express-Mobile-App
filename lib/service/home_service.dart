@@ -26,8 +26,8 @@ Future<void> updateAwbStatusOnScan(
 }
 
 Future<List<ProductFieldValues>> getProductFieldValues(
-    String status, String token) async {
-  String apiUrl = getAllProductFieldValuesByProductFieldUrl(status);
+    String productField, String token) async {
+  String apiUrl = getAllProductFieldValuesByProductFieldUrl(productField);
   final Uri uri = Uri.parse(apiUrl);
 
   final response = await http.get(

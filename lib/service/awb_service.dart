@@ -4,6 +4,8 @@ import 'package:salsel_express/constant/api_end_points.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/city.dart';
 import 'package:salsel_express/model/country.dart';
+import 'package:salsel_express/model/product_type.dart';
+import 'package:salsel_express/model/service_type.dart';
 
 Future<Awb> createAirWayBill(Awb awb, String token) async {
   final Uri uri = Uri.parse(createAwbUrl);
@@ -99,5 +101,45 @@ Future<Awb> getAwbById(String awbId, String token) async {
     return Awb.fromJson(jsonData);
   } else {
     throw Exception('Failed to load Awb');
+  }
+}
+
+Future<List<ProductType>> getAllProductType(String status, String token) async {
+  String apiUrl = getAllProductTypeUrl(status);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = json.decode(response.body);
+    return jsonList.map((json) => ProductType.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load all ProductType');
+  }
+}
+
+Future<List<ServiceType>> getAllServiceType(int id, String token) async {
+  String apiUrl = getAllServiceTypeByProductTypeUrl(id);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = json.decode(response.body);
+    return jsonList.map((json) => ServiceType.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load all Service Type');
   }
 }

@@ -38,3 +38,11 @@ String getAwbByUniqueNumberUrl(int uniqueNumber) {
 String getAwbByAssignedUserUrl(String user, bool status) {
   return '${baseURL}awb/assigned-user?status=$status&user=$user';
 }
+
+String getAllProductTypeUrl(String status) {
+  return '${baseURL}product-type?status=$status';
+}
+
+String getAllServiceTypeByProductTypeUrl(int id) {
+  return '${baseURL}service-type/product-type/$id';
+}
