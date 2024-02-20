@@ -143,3 +143,30 @@ Future<List<ServiceType>> getAllServiceType(int id, String token) async {
     throw Exception('Failed to load all Service Type');
   }
 }
+
+Future<List<Map<String,dynamic>>> getAccountsWithCustomer(String status, String token) async {
+  String apiUrl = getAccountNumberWithCustomerUrl(status);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonResponse = json.decode(response.body);
+    List<Map<String, dynamic>> accountList = jsonResponse.map((json) {
+      return {
+        'accountNumber': json['accountNumber'].toString(),
+        'customerName': json['customerName'],
+      };
+    }).toList();
+
+    return accountList;
+  } else {
+    throw Exception('Failed to load accounts');
+  }
+}

@@ -7,6 +7,10 @@ String getAllTicketsUrl(String status) {
   return '${baseURL}ticket/ticket-status/$status';
 }
 
+String getAccountNumberWithCustomerUrl(String status) {
+  return '${baseURL}account/customer-name?status=$status';
+}
+
 String getTicketByIdUrl(String id) {
   return '${baseURL}ticket/$id';
 }

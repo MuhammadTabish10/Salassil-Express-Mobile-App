@@ -32,6 +32,7 @@ class _CreateAwbState extends State<CreateAwbView> {
   late Future<List<ProductFieldValues>> currenciesFuture;
   late Future<List<ProductFieldValues>> dutyAndTaxesBillToFuture;
   late Future<List<ProductFieldValues>> requestTypeFuture;
+  late Future<List<String>> accountsFuture;
   late Country? originCountry;
   late Country? destinationCountry;
   late ProductType? productType;
@@ -45,6 +46,7 @@ class _CreateAwbState extends State<CreateAwbView> {
   String? currencyValue;
   String? requestTypeValue;
   String? dutyAndTaxesBillToValue;
+  String? accountNumberValue;
 
   final TextEditingController shipperNameController = TextEditingController();
   final TextEditingController shipperContactNumberController =
@@ -82,6 +84,10 @@ class _CreateAwbState extends State<CreateAwbView> {
   @override
   void initState() {
     super.initState();
+    initializeData();
+  }
+
+  Future<void> initializeData() async {
     originCountry = null;
     destinationCountry = null;
     productType = null;
@@ -91,6 +97,25 @@ class _CreateAwbState extends State<CreateAwbView> {
     currenciesFuture = fetchCurrencies("Currency");
     dutyAndTaxesBillToFuture = fetchDutyAndTaxesBillTo("Duty And Tax Billing");
     requestTypeFuture = fetchRequestTypes("Request Type");
+    accountsFuture = fetchAccounts("true");
+  }
+
+  Future<List<String>> fetchAccounts(String status) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      List<Map<String, dynamic>> fetchedAccounts =
+          await getAccountsWithCustomer(status, token);
+
+      // Mapping fetched accounts to the desired format
+      List<String> accountList = fetchedAccounts.map((account) {
+        return '${account["accountNumber"]}, ${account["customerName"]}';
+      }).toList();
+
+      return accountList;
+    } catch (error) {
+      debugPrint('Error fetching accounts: $error');
+      rethrow;
+    }
   }
 
   Future<List<Country>> fetchCountries(String status) async {
@@ -220,6 +245,32 @@ class _CreateAwbState extends State<CreateAwbView> {
               key: _fbKey,
               child: Column(
                 children: [
+                  FutureBuilder<List<String>>(
+                    future: accountsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: SpinKitSpinningLines(color: primarySwatch),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        List<String> accounts = snapshot.data!;
+                        return buildDropdownField(
+                          'Account Number',
+                          Icons.account_balance_wallet,
+                          accounts,
+                          accountNumberValue,
+                          (newValue) {
+                            setState(() {
+                              accountNumberValue = newValue;
+                            });
+                          },
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   buildInputField(
                     'Shipper Name',
                     Icons.person,
@@ -406,12 +457,6 @@ class _CreateAwbState extends State<CreateAwbView> {
                     'District',
                     Icons.location_city,
                     deliveryDistrictController,
-                  ),
-                  const SizedBox(height: 16),
-                  buildInputField(
-                    'Account Number',
-                    Icons.account_balance_wallet,
-                    accountNumberController,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
