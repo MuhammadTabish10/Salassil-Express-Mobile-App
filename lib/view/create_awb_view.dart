@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -28,6 +30,7 @@ class CreateAwbView extends StatefulWidget {
 class _CreateAwbState extends State<CreateAwbView> {
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
   late User user;
+  bool isLoading = false;
 
   late Future<List<Country>> originCountriesFuture;
   late Future<List<Country>> destinationCountriesFuture;
@@ -300,12 +303,14 @@ class _CreateAwbState extends State<CreateAwbView> {
                     'Shipper Name',
                     Icons.person,
                     shipperNameController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Contact Number',
                     Icons.phone,
                     shipperContactNumberController,
+                    true,
                   ),
                   const SizedBox(height: 16),
                   FutureBuilder<List<Country>>(
@@ -377,36 +382,42 @@ class _CreateAwbState extends State<CreateAwbView> {
                     'Pickup Address',
                     Icons.location_on,
                     pickupAddressController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Street Name',
                     Icons.location_city,
                     pickupStreetNameController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'District',
                     Icons.location_city,
                     pickupDistrictController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Shipper Ref Number',
                     Icons.confirmation_number,
                     shipperRefNumberController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Recipient Name',
                     Icons.person,
                     recipientsNameController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Recipient Contact Number',
                     Icons.phone,
                     recipientsContactNumberController,
+                    true,
                   ),
                   const SizedBox(height: 16),
                   FutureBuilder<List<Country>>(
@@ -478,18 +489,21 @@ class _CreateAwbState extends State<CreateAwbView> {
                     'Delivery Address',
                     Icons.location_on,
                     deliveryAddressController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Street Name',
                     Icons.location_city,
                     deliveryStreetNameController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'District',
                     Icons.location_city,
                     deliveryDistrictController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildDateField(
@@ -618,24 +632,28 @@ class _CreateAwbState extends State<CreateAwbView> {
                     'Pieces',
                     Icons.layers,
                     piecesController,
+                    true,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Content',
                     Icons.description,
                     contentController,
+                    false,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Weight',
                     Icons.line_weight,
                     weightController,
+                    true,
                   ),
                   const SizedBox(height: 16),
                   buildInputField(
                     'Amount',
                     Icons.monetization_on,
                     amountController,
+                    true,
                   ),
                   const SizedBox(height: 16),
                   FutureBuilder<List<ProductFieldValues>>(
@@ -704,36 +722,74 @@ class _CreateAwbState extends State<CreateAwbView> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () async {
-                      // Validate the form
-                      if (!_fbKey.currentState!.saveAndValidate()) {
-                        // Form is not valid, return or show error message
-                        return;
-                      }
-                      // Create an Awb object using the form data
-                      Awb newAwb = createAwbFromTextControllers();
-                      try {
-                        String token =
-                            Provider.of<TokenProvider>(context, listen: false)
-                                .token;
-                        var createdAwb = await createAirWayBill(newAwb, token);
-                        // Handle the created Awb object as needed
-                        debugPrint('Created AWB: ${createdAwb.toJson()}');
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            if (!_fbKey.currentState!.saveAndValidate()) {
+                              // Form is not valid, show error message
+                              CustomToast.showAlert(context,
+                                  'Please fill in all required fields.');
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
 
-                        // Pop the current page
-                        Navigator.of(context).pop();
+                            // Check for null values in individual fields
+                            if (accountNumberValue == null ||
+                                originCountryValue == null ||
+                                originCityValue == null ||
+                                destinationCountryValue == null ||
+                                destinationCityValue == null ||
+                                productTypeValue == null ||
+                                serviceTypeValue == null ||
+                                requestTypeValue == null ||
+                                piecesController.text.isEmpty ||
+                                contentController.text.isEmpty ||
+                                weightController.text.isEmpty ||
+                                amountController.text.isEmpty ||
+                                currencyValue == null ||
+                                dutyAndTaxesBillToValue == null) {
+                              CustomToast.showAlert(context,
+                                  'Please fill in all required fields.');
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+                            // Create an Awb object using the form data
+                            Awb newAwb = createAwbFromTextControllers();
+                            try {
+                              String token = Provider.of<TokenProvider>(context,
+                                      listen: false)
+                                  .token;
+                              var createdAwb =
+                                  await createAirWayBill(newAwb, token);
+                              // Handle the created Awb object as needed
+                              debugPrint('Created AWB: ${createdAwb.toJson()}');
 
-                        // Push the page again to reload and render
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                              builder: (context) => const HomeView()),
-                        );
-                      } catch (e) {
-                        // Handle any exceptions that occur during the API call
-                        debugPrint('API Error: $e');
-                        CustomToast.showAlert(context, 'Awb not created');
-                      }
-                    },
+                              // Pop the current page
+                              Navigator.of(context).pop();
+
+                              // Push the page again to reload and render
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) => const HomeView()),
+                              );
+                            } catch (e) {
+                              // Handle any exceptions that occur during the API call
+                              debugPrint('API Error: $e');
+                              CustomToast.showAlert(context, 'Awb not created');
+                            } finally {
+                              // Set loading state to false
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: primarySwatch[500],
@@ -747,11 +803,14 @@ class _CreateAwbState extends State<CreateAwbView> {
                         vertical: 16.0,
                         horizontal: 24.0,
                       ),
-                      child: const Center(
-                        child: Text(
-                          'Submit',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                      child: Center(
+                        child: isLoading
+                            ? const SpinKitSpinningLines(
+                                color: primarySwatch) // Show loader
+                            : const Text(
+                                'Submit',
+                                style: TextStyle(fontSize: 18),
+                              ),
                       ),
                     ),
                   ),
@@ -764,8 +823,8 @@ class _CreateAwbState extends State<CreateAwbView> {
     );
   }
 
-  Widget buildInputField(
-      String labelText, IconData prefixIcon, TextEditingController controller) {
+  Widget buildInputField(String labelText, IconData prefixIcon,
+      TextEditingController controller, bool numeric) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
@@ -782,6 +841,7 @@ class _CreateAwbState extends State<CreateAwbView> {
       ),
       child: TextFormField(
         controller: controller,
+        keyboardType: numeric ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: labelText,
           prefixIcon: Icon(prefixIcon, color: primarySwatch),
