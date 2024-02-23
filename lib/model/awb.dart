@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Awb {
   final int? id;
@@ -22,7 +23,6 @@ class Awb {
   final String? accountNumber;
   final String? serviceTypeCode;
   final String? createdBy;
-  final String? assignedTo;
   final String? assignedToUser;
   final DateTime? pickupDate;
   final TimeOfDay? pickupTime;
@@ -62,7 +62,6 @@ class Awb {
     this.accountNumber,
     this.serviceTypeCode,
     this.createdBy,
-    this.assignedTo,
     this.assignedToUser,
     this.pickupDate,
     this.pickupTime,
@@ -105,7 +104,6 @@ class Awb {
       accountNumber: json['accountNumber'],
       serviceTypeCode: json['serviceTypeCode'],
       createdBy: json['createdBy'],
-      assignedTo: json['assignedTo'],
       assignedToUser: json['assignedToUser'],
       pickupDate: json['pickupDate'] != null
           ? DateTime.parse(json['pickupDate'])
@@ -150,11 +148,12 @@ class Awb {
       'accountNumber': accountNumber,
       'serviceTypeCode': serviceTypeCode,
       'createdBy': createdBy,
-      'assignedTo': assignedTo,
       'assignedToUser': assignedToUser,
-      'pickupDate': pickupDate?.toIso8601String(),
+      'pickupDate': pickupDate != null
+          ? DateFormat('yyyy-MM-dd').format(pickupDate!)
+          : null,
       'pickupTime': pickupTime != null
-          ? '${pickupTime!.hour.toString().padLeft(2, '0')}:${pickupTime!.minute.toString().padLeft(2, '0')}'
+          ? '${pickupTime!.hour.toString().padLeft(2, '0')}:${pickupTime!.minute.toString().padLeft(2, '0')}:00'
           : null,
       'productType': productType,
       'serviceType': serviceType,

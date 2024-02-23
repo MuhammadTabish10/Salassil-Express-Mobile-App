@@ -4,16 +4,18 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:salsel_express/config/token_provider.dart';
-import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/city.dart';
 import 'package:salsel_express/model/country.dart';
 import 'package:salsel_express/model/product_field_values.dart';
 import 'package:salsel_express/model/product_type.dart';
 import 'package:salsel_express/model/service_type.dart';
+import 'package:salsel_express/model/user.dart';
 import 'package:salsel_express/service/awb_service.dart';
 import 'package:salsel_express/service/home_service.dart';
+import 'package:salsel_express/util/custom_toast.dart';
 import 'package:salsel_express/util/themes.dart';
+import 'package:salsel_express/view/home_view.dart';
 import 'package:salsel_express/widget/general_widgets.dart';
 
 class CreateAwbView extends StatefulWidget {
@@ -25,6 +27,7 @@ class CreateAwbView extends StatefulWidget {
 
 class _CreateAwbState extends State<CreateAwbView> {
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+  late User user;
 
   late Future<List<Country>> originCountriesFuture;
   late Future<List<Country>> destinationCountriesFuture;
@@ -47,6 +50,7 @@ class _CreateAwbState extends State<CreateAwbView> {
   String? requestTypeValue;
   String? dutyAndTaxesBillToValue;
   String? accountNumberValue;
+  String? serviceTypeCodeValue;
 
   final TextEditingController shipperNameController = TextEditingController();
   final TextEditingController shipperContactNumberController =
@@ -91,13 +95,25 @@ class _CreateAwbState extends State<CreateAwbView> {
     originCountry = null;
     destinationCountry = null;
     productType = null;
+    accountsFuture = fetchAccounts("true");
     originCountriesFuture = fetchCountries("true");
     destinationCountriesFuture = fetchCountries("true");
     productTypeFuture = fetchProductTypes("true");
     currenciesFuture = fetchCurrencies("Currency");
     dutyAndTaxesBillToFuture = fetchDutyAndTaxesBillTo("Duty And Tax Billing");
     requestTypeFuture = fetchRequestTypes("Request Type");
-    accountsFuture = fetchAccounts("true");
+    user = await fetchLoggedInUser();
+  }
+
+  Future<User> fetchLoggedInUser() async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      User loggedInUser = await getLoggedInUser(token);
+      return loggedInUser;
+    } catch (error) {
+      debugPrint('Error fetching User: $error');
+      rethrow;
+    }
   }
 
   Future<List<String>> fetchAccounts(String status) async {
@@ -234,7 +250,14 @@ class _CreateAwbState extends State<CreateAwbView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create AWB'),
+        title: const Text(
+          'Create AWB',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24.0,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -253,7 +276,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<String> accounts = snapshot.data!;
                         return buildDropdownField(
@@ -291,7 +316,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<Country> countries = snapshot.data!;
                         List<String> countryNames =
@@ -325,7 +352,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<String> cityNames =
                             snapshot.data!.map((city) => city.name!).toList();
@@ -388,7 +417,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<Country> countries = snapshot.data!;
                         List<String> countryNames =
@@ -422,7 +453,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<String> cityNames =
                             snapshot.data!.map((city) => city.name!).toList();
@@ -459,12 +492,6 @@ class _CreateAwbState extends State<CreateAwbView> {
                     deliveryDistrictController,
                   ),
                   const SizedBox(height: 16),
-                  buildInputField(
-                    'Assigned To',
-                    Icons.person,
-                    assignedToController,
-                  ),
-                  const SizedBox(height: 16),
                   buildDateField(
                     'Pickup Date',
                     Icons.calendar_today,
@@ -487,7 +514,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<ProductType> productTypes = snapshot.data!;
                         List<String> productTypesNames = productTypes
@@ -522,9 +551,12 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
-                        List<String> serviceTypeNames = snapshot.data!
+                        List<ServiceType> serviceTypes = snapshot.data!;
+                        List<String> serviceTypeNames = serviceTypes
                             .map((service) => service.name!)
                             .toList();
                         return buildDropdownField(
@@ -533,8 +565,16 @@ class _CreateAwbState extends State<CreateAwbView> {
                           serviceTypeNames,
                           serviceTypeValue,
                           (newValue) {
+                            // Find the selected service type by its name
+                            ServiceType selectedServiceType =
+                                serviceTypes.firstWhere(
+                                    (service) => service.name == newValue,
+                                    orElse: () => ServiceType());
+
                             setState(() {
                               serviceTypeValue = newValue;
+                              // Set the serviceTypeCodeValue to the code of the selected service type
+                              serviceTypeCodeValue = selectedServiceType.code;
                             });
                           },
                         );
@@ -550,7 +590,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<ProductFieldValues> requestTypeList =
                             snapshot.data!;
@@ -604,7 +646,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<ProductFieldValues> currencies = snapshot.data!;
                         List<String> currenciesNames = currencies
@@ -633,7 +677,9 @@ class _CreateAwbState extends State<CreateAwbView> {
                           child: SpinKitSpinningLines(color: primarySwatch),
                         );
                       } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
+                        CustomToast.showAlert(
+                            context, 'Error: ${snapshot.error}');
+                        return const SizedBox();
                       } else {
                         List<ProductFieldValues> dutyAndTaxesBillToList =
                             snapshot.data!;
@@ -659,64 +705,33 @@ class _CreateAwbState extends State<CreateAwbView> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
-                      if (_fbKey.currentState!.saveAndValidate()) {
-                        // Extract data from the form
-                        var formData = _fbKey.currentState!.value;
+                      // Validate the form
+                      if (!_fbKey.currentState!.saveAndValidate()) {
+                        // Form is not valid, return or show error message
+                        return;
+                      }
+                      // Create an Awb object using the form data
+                      Awb newAwb = createAwbFromTextControllers();
+                      try {
+                        String token =
+                            Provider.of<TokenProvider>(context, listen: false)
+                                .token;
+                        var createdAwb = await createAirWayBill(newAwb, token);
+                        // Handle the created Awb object as needed
+                        debugPrint('Created AWB: ${createdAwb.toJson()}');
 
-                        // Create an Awb object using the form data
-                        Awb newAwb = Awb(
-                          shipperName: shipperNameController.text,
-                          shipperContactNumber:
-                              shipperContactNumberController.text,
-                          originCountry: originCountryValue,
-                          originCity: originCityValue,
-                          pickupAddress: pickupAddressController.text,
-                          pickupStreetName: pickupStreetNameController.text,
-                          pickupDistrict: pickupDistrictController.text,
-                          shipperRefNumber: shipperRefNumberController.text,
-                          recipientsName: recipientsNameController.text,
-                          recipientsContactNumber:
-                              recipientsContactNumberController.text,
-                          destinationCountry: destinationCountryValue,
-                          destinationCity: destinationCityValue,
-                          deliveryAddress: deliveryAddressController.text,
-                          deliveryStreetName: deliveryStreetNameController.text,
-                          deliveryDistrict: deliveryDistrictController.text,
-                          accountNumber: accountNumberController.text,
-                          assignedTo: assignedToController.text,
-                          pickupDate: DateTime.parse(pickupDateController
-                              .text), // Assuming pickupDate is DateTime
-                          pickupTime: TimeOfDay(
-                            hour: int.parse(pickupTimeController.text
-                                .split(':')[0]), // Extract hour
-                            minute: int.parse(pickupTimeController.text
-                                .split(':')[1]), // Extract minute
-                          ),
-                          productType: productTypeValue,
-                          serviceType: serviceTypeValue,
-                          requestType: requestTypeValue,
-                          pieces: double.parse(piecesController.text),
-                          content: contentController.text,
-                          weight: double.parse(weightController.text),
-                          amount: double.parse(amountController.text),
-                          currency: currencyValue,
-                          dutyAndTaxesBillTo: dutyAndTaxesBillToValue,
+                        // Pop the current page
+                        Navigator.of(context).pop();
+
+                        // Push the page again to reload and render
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (context) => const HomeView()),
                         );
-
-                        // Make the API call to create AWB
-                        try {
-                          // Replace 'yourToken' with the actual token you have
-                          String token =
-                              Provider.of<TokenProvider>(context, listen: false)
-                                  .token;
-                          var createdAwb =
-                              await createAirWayBill(newAwb, token);
-                          // Handle the created Awb object as needed
-                          debugPrint('Created AWB: ${createdAwb.toJson()}');
-                        } catch (e) {
-                          // Handle any exceptions that occur during the API call
-                          debugPrint('API Error: $e');
-                        }
+                      } catch (e) {
+                        // Handle any exceptions that occur during the API call
+                        debugPrint('API Error: $e');
+                        CustomToast.showAlert(context, 'Awb not created');
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -819,6 +834,46 @@ class _CreateAwbState extends State<CreateAwbView> {
         // to prevent overflow
         isExpanded: true,
       ),
+    );
+  }
+
+  Awb createAwbFromTextControllers() {
+    DateTime pickupDate =
+        DateFormat('yyyy-MM-dd').parse(pickupDateController.text);
+    DateTime pickupDateTime =
+        DateFormat('h:mm a').parse(pickupTimeController.text);
+    TimeOfDay pickupTime = TimeOfDay.fromDateTime(pickupDateTime);
+    return Awb(
+      shipperName: shipperNameController.text,
+      shipperContactNumber: shipperContactNumberController.text,
+      originCountry: originCountryValue,
+      originCity: originCityValue,
+      pickupAddress: pickupAddressController.text,
+      pickupStreetName: pickupStreetNameController.text,
+      pickupDistrict: pickupDistrictController.text,
+      shipperRefNumber: shipperRefNumberController.text,
+      recipientsName: recipientsNameController.text,
+      createdBy: user.email,
+      serviceTypeCode: serviceTypeCodeValue,
+      assignedToUser: user.name,
+      recipientsContactNumber: recipientsContactNumberController.text,
+      destinationCountry: destinationCountryValue,
+      destinationCity: destinationCityValue,
+      deliveryAddress: deliveryAddressController.text,
+      deliveryStreetName: deliveryStreetNameController.text,
+      deliveryDistrict: deliveryDistrictController.text,
+      accountNumber: accountNumberValue!.split(',')[0].trim(),
+      pickupDate: pickupDate,
+      pickupTime: pickupTime,
+      productType: productTypeValue,
+      serviceType: serviceTypeValue,
+      requestType: requestTypeValue,
+      pieces: double.parse(piecesController.text),
+      content: contentController.text,
+      weight: double.parse(weightController.text),
+      amount: double.parse(amountController.text),
+      currency: currencyValue,
+      dutyAndTaxesBillTo: dutyAndTaxesBillToValue,
     );
   }
 }
