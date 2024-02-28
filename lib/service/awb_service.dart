@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:salsel_express/constant/api_end_points.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/city.dart';
@@ -66,15 +68,18 @@ Future<List<City>> getCities(int id, String token) async {
   }
 }
 
-Future<List<Awb>> getAllAwbByAssignedUser(String user, bool status, String token) async {
-    String apiUrl = getAwbByAssignedUserUrl(user,status);
-    final Uri uri = Uri.parse(apiUrl);
+Future<List<Awb>> getAllAwbByAssignedUser(
+    String user, bool status, String token) async {
+  String apiUrl = getAwbByAssignedUserUrl(user, status);
+  final Uri uri = Uri.parse(apiUrl);
 
-  final response = await http.get(uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },);
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonList = json.decode(response.body);
@@ -83,6 +88,87 @@ Future<List<Awb>> getAllAwbByAssignedUser(String user, bool status, String token
     throw Exception('Failed to load awbs');
   }
 }
+
+Future<void> downloadAwbPdf(int awbId) async {
+  try {
+    if (!(await Permission.storage.isGranted)) {
+      // Request the WRITE_EXTERNAL_STORAGE permission if it has not been granted yet
+      var status = await Permission.storage.request();
+      if (status != PermissionStatus.granted) {
+        throw Exception('Permission denied for storage');
+      }
+    }
+
+    String downloadsFolderPath = "/storage/emulated/0/Download";
+
+    String fileName = 'awb_$awbId.pdf'; // Initial name of the file to be saved
+    int counter = 0;
+    File file = File('$downloadsFolderPath/$fileName');
+
+    // Check if the file already exists
+    while (await file.exists()) {
+      counter++;
+      // If the file already exists, increment the counter and append it to the file name
+      fileName = 'awb_$awbId($counter).pdf';
+      file = File('$downloadsFolderPath/$fileName');
+    }
+
+    String apiUrl = downloadAwbUrl(awbId);
+    final Uri uri = Uri.parse(apiUrl);
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+      await file.writeAsBytes(bytes);
+      print('PDF downloaded successfully at: ${file.path}');
+    } else {
+      print('Failed to download PDF. Status Code: ${response.statusCode}');
+      throw Exception('Failed to download PDF');
+    }
+  } catch (e) {
+    print('Exception occurred: $e');
+    throw Exception('Failed to download PDF');
+  }
+}
+
+// Future<void> downloadAwbPdf(int awbId) async {
+//   try {
+//     if (!(await Permission.storage.isGranted)) {
+//       // Request the WRITE_EXTERNAL_STORAGE permission if it has not been granted yet
+//       var status = await Permission.storage.request();
+//       if (status != PermissionStatus.granted) {
+//         throw Exception('Permission denied for storage');
+//       }
+//     }
+
+//     String downloadsFolderPath = "/storage/emulated/0/Download";
+
+//     String fileName = 'awb_$awbId.pdf'; // Name of the file to be saved
+//     File file = File('$downloadsFolderPath/$fileName');
+
+//     String apiUrl = downloadAwbUrl(awbId);
+//     final Uri uri = Uri.parse(apiUrl);
+//     final response = await http.get(
+//       uri,
+//       headers: {'Content-Type': 'application/json'},
+//     );
+
+//     if (response.statusCode == 200) {
+//       final bytes = response.bodyBytes;
+//       await file.writeAsBytes(bytes);
+//       print('PDF downloaded successfully at: ${file.path}');
+//     } else {
+//       print('Failed to download PDF. Status Code: ${response.statusCode}');
+//       throw Exception('Failed to download PDF');
+//     }
+//   } catch (e) {
+//     print('Exception occurred: $e');
+//     throw Exception('Failed to download PDF');
+//   }
+// }
 
 Future<Awb> getAwbById(String awbId, String token) async {
   final String apiUrl = getAwbByIdUrl(awbId);
@@ -144,7 +230,8 @@ Future<List<ServiceType>> getAllServiceType(int id, String token) async {
   }
 }
 
-Future<List<Map<String,dynamic>>> getAccountsWithCustomer(String status, String token) async {
+Future<List<Map<String, dynamic>>> getAccountsWithCustomer(
+    String status, String token) async {
   String apiUrl = getAccountNumberWithCustomerUrl(status);
   final Uri uri = Uri.parse(apiUrl);
 

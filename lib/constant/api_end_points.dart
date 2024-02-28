@@ -1,4 +1,5 @@
-const String baseURL = 'http://192.168.0.105:8080/api/';
+// const String baseURL = 'http://192.168.1.227:8080/api/';
+const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
 const String createAwbUrl = '${baseURL}awb';
 const String getLoggedInUserUrl = '${baseURL}user/current-user';
@@ -49,4 +50,8 @@ String getAllProductTypeUrl(String status) {
 
 String getAllServiceTypeByProductTypeUrl(int id) {
   return '${baseURL}service-type/product-type/$id';
+}
+
+String downloadAwbUrl(int id) {
+  return '${baseURL}awb/pdf/awb_$id/$id';
 }

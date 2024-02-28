@@ -59,36 +59,43 @@ class CardWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 4.0),
+                      FittedBox(
+                        // Wrap with FittedBox
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          // Text widget for automatic scaling
+                          name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      status,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: statusTextColor, // Use determined text color
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 4.0),
+                      Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: statusTextColor, // Use determined text color
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.only(top: 16.0),

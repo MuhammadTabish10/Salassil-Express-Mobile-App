@@ -59,7 +59,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
     }
   }
 
-  void _showAssignStatusPopup(BuildContext context) {
+  void showAssignStatusPopup(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -172,7 +172,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () {
-                      _showAssignStatusPopup(context);
+                      showAssignStatusPopup(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primarySwatch, // Change the color here
