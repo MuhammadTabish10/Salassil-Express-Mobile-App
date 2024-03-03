@@ -140,6 +140,7 @@ class _JobDetailViewState extends State<JobDetailView> {
                   });
 
                   // Close the dialog
+                  
                   Navigator.of(context).pushNamed(homeRoute);
                 } catch (e) {
                   // Stop loading

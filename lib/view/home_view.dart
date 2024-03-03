@@ -1,6 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
+import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
+import 'package:salsel_express/service/home_service.dart';
 import 'package:salsel_express/util/helper.dart';
 import 'package:salsel_express/util/themes.dart';
 import 'package:salsel_express/view/scan_result_view.dart';
@@ -19,6 +23,26 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   int _currentIndex = 0;
+  int? awbCount;
+  int? ticketCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCountsOnPageLoad();
+  }
+
+  void _fetchCountsOnPageLoad() async {
+    String token = Provider.of<TokenProvider>(context, listen: false).token;
+    try {
+      awbCount = await getAwbCount(token);
+      ticketCount = await getTicketCount(token);
+      setState(() {}); // Trigger a rebuild after counts are fetched
+    } catch (error) {
+      debugPrint('Error fetching counts: $error');
+    }
+  }
+
   final PageController _pageController = PageController(
     initialPage: 0,
     viewportFraction: 1.0,
@@ -49,40 +73,47 @@ class _HomeViewState extends State<HomeView> {
           ),
         ],
       ),
-      body: PageView(
-        controller: _pageController,
-        children: [
-          Container(
-            color: Themes.backgroundColor,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  buildCard('Scan', Icons.qr_code_scanner,
-                      showCount: false, onTap: () => _startScan()),
-                  const SizedBox(height: 16.0),
-                  buildCard('My Jobs', Icons.assignment, count: 5, onTap: () {
-                    navigateToPage(2);
-                  }),
-                  const SizedBox(height: 16.0),
-                  buildCard('Tickets', Icons.confirmation_number, count: 8,
-                      onTap: () {
-                    navigateToPage(1);
-                  }),
-                ],
-              ),
+      body: awbCount == null || ticketCount == null
+          ? const Center(
+              child: SpinKitSpinningLines(color: primarySwatch),
+            ) // Show loading indicator while counts are being fetched
+          : PageView(
+              controller: _pageController,
+              children: [
+                Container(
+                  color: Themes.backgroundColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        buildCard('Scan', Icons.qr_code_scanner,
+                            showCount: false, onTap: () => _startScan()),
+                        const SizedBox(height: 16.0),
+                        buildCard('My Jobs', Icons.assignment,
+                            count: awbCount!,
+                            onTap: () {
+                              navigateToPage(2);
+                            }),
+                        const SizedBox(height: 16.0),
+                        buildCard('Tickets', Icons.confirmation_number,
+                            count: ticketCount!,
+                            onTap: () {
+                              navigateToPage(1);
+                            }),
+                      ],
+                    ),
+                  ),
+                ),
+                const ShowTicketsView(),
+                const ShowJobsView(),
+              ],
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
             ),
-          ),
-          const ShowTicketsView(),
-          const ShowJobsView(),
-        ],
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
       bottomNavigationBar: BottomNavigationWidget(
         currentIndex: _currentIndex,
         onTap: (index) {

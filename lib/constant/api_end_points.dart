@@ -3,6 +3,8 @@ const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
 const String createAwbUrl = '${baseURL}awb';
 const String getLoggedInUserUrl = '${baseURL}user/current-user';
+const String getAwbCountByAssignedUserUrl = '${baseURL}awb/count/assigned-user';
+const String getTicketCountUrl = '${baseURL}ticket/count';
 
 String getAllTicketsUrl(String status) {
   return '${baseURL}ticket/ticket-status/$status';

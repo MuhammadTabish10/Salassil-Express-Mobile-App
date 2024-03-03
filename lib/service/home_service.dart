@@ -85,3 +85,43 @@ Future<User> getLoggedInUser(String token) async {
     throw Exception('Failed to load LoggedIn User');
   }
 }
+
+Future<int> getAwbCount(String token) async {
+  String apiUrl = getAwbCountByAssignedUserUrl;
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonData = json.decode(response.body);
+    return jsonData as int;
+  } else {
+    throw Exception('Failed to load Awb count');
+  }
+}
+
+Future<int> getTicketCount(String token) async {
+  String apiUrl = getTicketCountUrl;
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonData = json.decode(response.body);
+    return jsonData as int;
+  } else {
+    throw Exception('Failed to load Ticket count');
+  }
+}
