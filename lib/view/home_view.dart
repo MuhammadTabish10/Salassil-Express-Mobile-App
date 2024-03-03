@@ -87,6 +87,7 @@ class _HomeViewState extends State<HomeView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const SizedBox(height: 16.0),
                         buildCard('Scan', Icons.qr_code_scanner,
                             showCount: false, onTap: () => _startScan()),
                         const SizedBox(height: 16.0),

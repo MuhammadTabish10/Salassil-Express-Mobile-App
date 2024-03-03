@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:salsel_express/util/themes.dart';
-import 'package:animated_card/animated_card.dart';
 
 Widget buildLogo(double logoSize) {
   return Hero(
@@ -89,7 +88,7 @@ Widget buildCard(String title, IconData iconData,
                     ),
                   ),
                   if (showCount) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       '$count',
                       style: TextStyle(
