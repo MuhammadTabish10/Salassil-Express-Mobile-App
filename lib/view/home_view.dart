@@ -90,17 +90,15 @@ class _HomeViewState extends State<HomeView> {
                         buildCard('Scan', Icons.qr_code_scanner,
                             showCount: false, onTap: () => _startScan()),
                         const SizedBox(height: 16.0),
-                        buildCard('My Jobs', Icons.assignment,
-                            count: awbCount!,
+                        buildCard('My Jobs', Icons.assignment, count: awbCount!,
                             onTap: () {
-                              navigateToPage(2);
-                            }),
+                          navigateToPage(2);
+                        }),
                         const SizedBox(height: 16.0),
                         buildCard('Tickets', Icons.confirmation_number,
-                            count: ticketCount!,
-                            onTap: () {
-                              navigateToPage(1);
-                            }),
+                            count: ticketCount!, onTap: () {
+                          navigateToPage(1);
+                        }),
                       ],
                     ),
                   ),
