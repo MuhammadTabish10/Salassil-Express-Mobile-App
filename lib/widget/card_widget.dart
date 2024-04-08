@@ -1,3 +1,4 @@
+
 import 'package:animated_card/animated_card.dart';
 import 'package:flutter/material.dart';
 import 'package:salsel_express/util/themes.dart';
@@ -60,6 +61,7 @@ class CardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
+                  flex: 3, // Adjust the flex value for better layout
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -72,17 +74,12 @@ class CardWidget extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4.0),
-                      FittedBox(
-                        // Wrap with FittedBox
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          // Text widget for automatic scaling
-                          name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4.0),
@@ -90,22 +87,27 @@ class CardWidget extends StatelessWidget {
                         status,
                         style: TextStyle(
                           fontSize: 18,
-                          color: statusTextColor, // Use determined text color
+                          color: statusTextColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(top: 16.0),
+                Expanded(
+                  flex: 1, // Adjust the flex value for better layout
                   child: Container(
+                    alignment: Alignment.center,
                     padding: const EdgeInsets.all(12.0),
                     decoration: const BoxDecoration(
                       color: primarySwatch,
                       shape: BoxShape.circle,
                     ),
-                    child: button,
+                    child: FittedBox(
+                      // Add FittedBox to ensure button text stays in one line
+                      fit: BoxFit.scaleDown,
+                      child: button,
+                    ),
                   ),
                 ),
               ],

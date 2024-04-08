@@ -1,5 +1,5 @@
-// const String baseURL = 'http://192.168.1.227:8080/api/';
-const String baseURL = 'https://api.salassilexpress.com/api/';
+const String baseURL = 'http://192.168.0.105:8080/api/';
+// const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
 const String createAwbUrl = '${baseURL}awb';
 const String getLoggedInUserUrl = '${baseURL}user/current-user';
@@ -56,4 +56,16 @@ String getAllServiceTypeByProductTypeUrl(int id) {
 
 String downloadAwbUrl(int id) {
   return '${baseURL}awb/pdf/awb_$id/$id';
+}
+
+String getLatestAwbHistoryByAwbUrl(int id) {
+  return '${baseURL}awb-shipping-history/awb/$id';
+}
+
+String updateAwbStatusWithCommentUrl(String status, int uniqueNumber, String comment){
+    return '${baseURL}awb/awb-status/unique-number/comment?comment=$comment&status=$status&uniqueNumber=$uniqueNumber';
+}
+
+String updateCommentInAwbHistoryUrl(int awbId, String comment){
+    return '${baseURL}awb-shipping-history/update-comment?comment=$comment&awbId=$awbId';
 }

@@ -915,7 +915,7 @@ class _CreateAwbState extends State<CreateAwbView> {
       recipientsName: recipientsNameController.text,
       createdBy: user.email,
       serviceTypeCode: serviceTypeCodeValue,
-      assignedToUser: user.name,
+      assignedToUser: user,
       recipientsContactNumber: recipientsContactNumberController.text,
       destinationCountry: destinationCountryValue,
       destinationCity: destinationCityValue,

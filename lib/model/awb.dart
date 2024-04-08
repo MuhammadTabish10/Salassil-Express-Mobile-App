@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:salsel_express/model/user.dart';
 
 class Awb {
   final int? id;
@@ -23,7 +24,7 @@ class Awb {
   final String? accountNumber;
   final String? serviceTypeCode;
   final String? createdBy;
-  final String? assignedToUser;
+  final User? assignedToUser;
   final DateTime? pickupDate;
   final TimeOfDay? pickupTime;
   final String? productType;
@@ -39,6 +40,7 @@ class Awb {
   final bool? emailFlag;
   final String? awbUrl;
   final String? awbStatus;
+
 
   const Awb({
     this.id,
@@ -104,7 +106,7 @@ class Awb {
       accountNumber: json['accountNumber'],
       serviceTypeCode: json['serviceTypeCode'],
       createdBy: json['createdBy'],
-      assignedToUser: json['assignedToUser'],
+      assignedToUser: json['assignedToUser'] != null ? User.fromJson(json['assignedToUser']) : null,
       pickupDate: json['pickupDate'] != null
           ? DateTime.parse(json['pickupDate'])
           : null,
@@ -148,7 +150,7 @@ class Awb {
       'accountNumber': accountNumber,
       'serviceTypeCode': serviceTypeCode,
       'createdBy': createdBy,
-      'assignedToUser': assignedToUser,
+      'assignedToUser': assignedToUser?.toJson(),
       'pickupDate': pickupDate != null
           ? DateFormat('yyyy-MM-dd').format(pickupDate!)
           : null,

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:salsel_express/config/token_provider.dart';
 import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/model/awb.dart';
+import 'package:salsel_express/model/awb_history.dart';
 import 'package:salsel_express/model/product_field_values.dart';
 import 'package:salsel_express/service/awb_service.dart';
 import 'package:salsel_express/service/home_service.dart';
@@ -26,6 +27,7 @@ class _JobDetailViewState extends State<JobDetailView> {
   bool _isLoading = false;
   late String _selectedStatus;
   List<ProductFieldValues> _productFieldValues = [];
+  AwbHistory? awbHistory;
   late Awb awb;
 
   @override
@@ -41,7 +43,7 @@ class _JobDetailViewState extends State<JobDetailView> {
     try {
       String token = Provider.of<TokenProvider>(context, listen: false).token;
 
-// Fetch AWB status
+      // Fetch AWB status
       awb = await getAwbByUniqueNumber(
           (await awbDetailsFuture).uniqueNumber ?? 0, token);
 
@@ -70,6 +72,7 @@ class _JobDetailViewState extends State<JobDetailView> {
     awbId = int.parse(id!); // Convert String to int
     awbDetailsFuture =
         fetchAwbDetails(awbId.toString()); // Convert int to String if necessary
+    fetchAwbHistory(awbId);
     _loadProductFieldValues();
   }
 
@@ -84,79 +87,259 @@ class _JobDetailViewState extends State<JobDetailView> {
     }
   }
 
+  void fetchAwbHistory(int awbId) async {
+    String token = Provider.of<TokenProvider>(context, listen: false).token;
+    try {
+      AwbHistory awbHistoryData = await getAwbHistoryWithComment(awbId, token);
+      awbHistory = awbHistoryData;
+    } catch (error) {
+      debugPrint('Error fetching awb history details: $error');
+      rethrow;
+    }
+  }
+
   void showAssignStatusPopup(BuildContext context) {
+    TextEditingController commentController =
+        TextEditingController(); // Controller for the comment text field
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit AWB Status'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return DropdownButton<String>(
-                value: _selectedStatus,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedStatus = newValue!;
-                  });
-                },
-                items: _productFieldValues
-                    .map<DropdownMenuItem<String>>((ProductFieldValues value) {
-                  return DropdownMenuItem<String>(
-                    value: value.name ?? '',
-                    child: Text(value.name ?? ''),
-                  );
-                }).toList(),
-              );
-            },
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Edit AWB Status',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: _selectedStatus,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedStatus = newValue!;
+                    });
+                  },
+                  items: _productFieldValues.map<DropdownMenuItem<String>>(
+                    (ProductFieldValues value) {
+                      return DropdownMenuItem<String>(
+                        value: value.name ?? '',
+                        child: Text(value.name ?? ''),
+                      );
+                    },
+                  ).toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Select Status',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    labelText: 'Add Comment (optional)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Start loading
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        try {
+                          // Get the token
+                          String token =
+                              Provider.of<TokenProvider>(context, listen: false)
+                                  .token;
+
+                          // Check if the status is changed
+                          if (_selectedStatus != awb.awbStatus) {
+                            // Call the API to update AWB status with selected status and comment
+                            await updateAwbStatusWithComment(
+                              awb.uniqueNumber ??
+                                  0, // Convert scannedResult to int
+                              _selectedStatus, // Use the selected status
+                              commentController.text,
+                              token,
+                            );
+
+                            // Stop loading
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            // Close the dialog
+                            Navigator.of(context).popUntil(ModalRoute.withName(
+                                homeRoute));
+                          } else {
+                            // Stop loading
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            CustomToast.showAlert(context,
+                                'AWB status is already set to $_selectedStatus.');
+                          }
+                        } catch (e) {
+                          // Stop loading
+                          setState(() {
+                            _isLoading = false;
+                          });
+
+                          debugPrint('Error updating AWB status: $e');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: primarySwatch[500],
+                      ),
+                      child: const Text('Edit'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () async {
-                // Start loading
-                setState(() {
-                  _isLoading = true;
-                });
+          ),
+        );
+      },
+    );
+  }
 
-                try {
-                  // Get the token
-                  String token =
-                      Provider.of<TokenProvider>(context, listen: false).token;
+  void showEditCommentPopup(BuildContext context) {
+    TextEditingController commentController =
+        TextEditingController(); // Controller for the comment text field
 
-                  // Call the API to update AWB status
-                  await updateAwbStatusOnScan(
-                      awb.uniqueNumber ?? 0, // Convert scannedResult to int
-                      _selectedStatus, // Use the selected status
-                      token);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Edit Comment',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter Comment',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        String comment = commentController.text.trim();
+                        if (comment.isNotEmpty) {
+                          // Start loading
+                          setState(() {
+                            _isLoading = true;
+                          });
 
-                  // Stop loading
-                  setState(() {
-                    _isLoading = false;
-                  });
+                          try {
+                            // Get the token
+                            String token = Provider.of<TokenProvider>(context,
+                                    listen: false)
+                                .token;
 
-                  // Close the dialog
-                  
-                  Navigator.of(context).pushNamed(homeRoute);
-                } catch (e) {
-                  // Stop loading
-                  setState(() {
-                    _isLoading = false;
-                  });
+                            // Call the API to update the comment
+                            await updateComment(
+                              awbId,
+                              comment,
+                              token,
+                            );
 
-                  debugPrint('Error updating AWB status: $e');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primarySwatch,
-              ),
-              child: const Text('Edit', style: TextStyle(color: Colors.white)),
+                            // Stop loading
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            // Close the dialog
+                            Navigator.of(context).popUntil(ModalRoute.withName(
+                                homeRoute)); // Close the edit comment dialog
+                          } catch (e) {
+                            // Stop loading
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            debugPrint('Error updating comment: $e');
+                          }
+                        } else {
+                          // Show an error message if comment is empty
+                          CustomToast.showAlert(
+                              context, 'Please enter a comment.');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: primarySwatch[500],
+                      ),
+                      child: const Text('Update'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -247,6 +430,8 @@ class _JobDetailViewState extends State<JobDetailView> {
                           duration: const Duration(milliseconds: 500),
                           child: _buildDetailsSection('Shipper Details', [
                             _buildDetailItem('Awb id', awbDetails.id),
+                            _buildDetailItem(
+                                'Shipper Name', awbDetails.shipperName),
                             _buildDetailItem('Shipper Contact',
                                 awbDetails.shipperContactNumber),
                             _buildDetailItem(
@@ -278,21 +463,81 @@ class _JobDetailViewState extends State<JobDetailView> {
                             ],
                           ),
                         ),
+                        AnimatedCard(
+                          direction: AnimatedCardDirection.top,
+                          duration: const Duration(milliseconds: 500),
+                          child: _buildDetailsSection(
+                            'Awb Status Details',
+                            [
+                              _buildDetailItem(
+                                  'Awb Status', awbHistory?.awbStatus),
+                              _buildDetailItem(
+                                  'Awb Comment', awbHistory?.comment),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 16.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            showAssignStatusPopup(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                primarySwatch, // Change the color here
-                          ),
-                          child: const Text(
-                            'Edit Status',
-                            style: TextStyle(
-                              color: Colors.white, // Text color
+                        Row(
+                          children: [
+                            Flexible(
+                              fit: FlexFit.tight,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  showAssignStatusPopup(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: primarySwatch[500],
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 5,
+                                  ),
+                                  child: Text(
+                                    'Edit Status',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(
+                                width: 10), // Add spacing between buttons
+                            Flexible(
+                              fit: FlexFit.tight,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  showEditCommentPopup(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: primarySwatch[500],
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 5,
+                                  ),
+                                  child: Text(
+                                    'Edit Comment',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:salsel_express/constant/api_end_points.dart';
 import 'package:salsel_express/model/awb.dart';
+import 'package:salsel_express/model/awb_history.dart';
 import 'package:salsel_express/model/city.dart';
 import 'package:salsel_express/model/country.dart';
 import 'package:salsel_express/model/product_type.dart';
@@ -255,5 +256,65 @@ Future<List<Map<String, dynamic>>> getAccountsWithCustomer(
     return accountList;
   } else {
     throw Exception('Failed to load accounts');
+  }
+}
+
+
+Future<AwbHistory> getAwbHistoryWithComment(int id, String token) async {
+  String apiUrl = getLatestAwbHistoryByAwbUrl(id);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final dynamic jsonResponse = json.decode(response.body);
+    return AwbHistory.fromJson(jsonResponse);
+  } else {
+    throw Exception('Failed to awbHistory');
+  }
+}
+
+Future<void> updateAwbStatusWithComment(
+    int uniqueNumber, String status, String comment, String token) async {
+  String apiUrl = updateAwbStatusWithCommentUrl(status, uniqueNumber, comment);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.put(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    print(response);
+  } else {
+    throw Exception('Failed to update AWB Status: ${response.statusCode}');
+  }
+}
+
+Future<void> updateComment(int id, String comment, String token) async {
+  String apiUrl = updateCommentInAwbHistoryUrl(id, comment);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.put(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    print(response);
+  } else {
+    throw Exception('Failed to update AWB Comment: ${response.statusCode}');
   }
 }
