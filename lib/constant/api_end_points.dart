@@ -1,5 +1,5 @@
-const String baseURL = 'http://192.168.0.105:8080/api/';
-// const String baseURL = 'https://api.salassilexpress.com/api/';
+// const String baseURL = 'http://192.168.0.105:8080/api/';
+const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
 const String createAwbUrl = '${baseURL}awb';
 const String getLoggedInUserUrl = '${baseURL}user/current-user';
@@ -42,8 +42,8 @@ String getAwbByUniqueNumberUrl(int uniqueNumber) {
   return '${baseURL}awb/unique-number/$uniqueNumber';
 }
 
-String getAwbByAssignedUserUrl(String user, bool status) {
-  return '${baseURL}awb/assigned-user?status=$status&user=$user';
+String getAwbByAssignedUserAndAwbStatusUrl(int userId, String status) {
+  return '${baseURL}awb/assigned-user/status?status=$status&userId=$userId';
 }
 
 String getAllProductTypeUrl(String status) {

@@ -70,8 +70,8 @@ Future<List<City>> getCities(int id, String token) async {
 }
 
 Future<List<Awb>> getAllAwbByAssignedUser(
-    String user, bool status, String token) async {
-  String apiUrl = getAwbByAssignedUserUrl(user, status);
+    int userId, String status, String token) async {
+  String apiUrl = getAwbByAssignedUserAndAwbStatusUrl(userId, status);
   final Uri uri = Uri.parse(apiUrl);
 
   final response = await http.get(

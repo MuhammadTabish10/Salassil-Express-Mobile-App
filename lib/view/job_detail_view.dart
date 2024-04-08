@@ -200,8 +200,9 @@ class _JobDetailViewState extends State<JobDetailView> {
                             });
 
                             // Close the dialog
-                            Navigator.of(context).popUntil(ModalRoute.withName(
-                                homeRoute));
+                            Navigator.of(context)
+                                .popUntil(ModalRoute.withName(homeRoute));
+                            Navigator.of(context).pushNamed(homeRoute);
                           } else {
                             // Stop loading
                             setState(() {
@@ -313,8 +314,9 @@ class _JobDetailViewState extends State<JobDetailView> {
                             });
 
                             // Close the dialog
-                            Navigator.of(context).popUntil(ModalRoute.withName(
-                                homeRoute)); // Close the edit comment dialog
+                            Navigator.of(context)
+                                .popUntil(ModalRoute.withName(homeRoute));
+                            Navigator.of(context).pushNamed(homeRoute);
                           } catch (e) {
                             // Stop loading
                             setState(() {

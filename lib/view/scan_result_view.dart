@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:salsel_express/config/token_provider.dart';
+import 'package:salsel_express/constant/routes.dart';
 import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/product_field_values.dart';
 import 'package:salsel_express/service/home_service.dart';
@@ -23,6 +24,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
   List<ProductFieldValues> _productFieldValues =
       []; // Initialize with empty list
   bool _isLoading = false; // Track loading state
+  bool _awbFound = true;
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
 
       // Set default value of dropdown to AWB status
       _selectedStatus = awb.awbStatus!;
+      _awbFound = true;
 
       // Fetch product field values
       _productFieldValues = await getProductFieldValues('Awb Status', token);
@@ -54,6 +57,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
     } catch (e) {
       setState(() {
         _isLoading = false; // Stop loading
+        _awbFound = false;
       });
       debugPrint('Error fetching product field values: $e');
     }
@@ -116,8 +120,9 @@ class _ScanResultPageState extends State<ScanResultPage> {
                   });
 
                   // Close the dialog
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  Navigator.of(context)
+                      .popUntil(ModalRoute.withName(homeRoute));
+                  Navigator.of(context).pushNamed(homeRoute);
                 } catch (e) {
                   // Stop loading
                   setState(() {
@@ -151,41 +156,48 @@ class _ScanResultPageState extends State<ScanResultPage> {
               child: SpinKitSpinningLines(color: primarySwatch),
             )
           : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Scanned Result:',
-                    style: TextStyle(fontSize: 20.0),
-                  ),
-                  const SizedBox(height: 16.0),
-                  Text(
-                    widget.scannedResult,
-                    style: const TextStyle(
-                        fontSize: 24.0, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    _selectedStatus, // Display AWB status
-                    style: const TextStyle(
-                        fontSize: 24.0, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      showAssignStatusPopup(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primarySwatch, // Change the color here
+              child: _awbFound
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Scanned Result:',
+                          style: TextStyle(fontSize: 20.0),
+                        ),
+                        const SizedBox(height: 16.0),
+                        Text(
+                          widget.scannedResult,
+                          style: const TextStyle(
+                              fontSize: 24.0, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          _selectedStatus, // Display AWB status
+                          style: const TextStyle(
+                              fontSize: 24.0, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16.0),
+                        ElevatedButton(
+                          onPressed: () {
+                            showAssignStatusPopup(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                primarySwatch, // Change the color here
+                          ),
+                          child: const Text(
+                            'Assign Status',
+                            style: TextStyle(
+                              color: Colors.white, // Text color
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Text(
+                      'Awb that you scanned is not found in our system. Please scan a valid AWB.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16.0),
                     ),
-                    child: const Text(
-                      'Assign Status',
-                      style: TextStyle(
-                        color: Colors.white, // Text color
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
     );
   }

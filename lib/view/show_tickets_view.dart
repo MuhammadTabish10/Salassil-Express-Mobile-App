@@ -20,6 +20,8 @@ class _ShowTicketsState extends State<ShowTicketsView> {
   late Future<List<Ticket>> ticketsFuture;
   late List<Ticket> filteredTickets;
   String selectedStatus = 'Open'; // Default filter value
+  bool initialLoadCompleted = false;
+
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _ShowTicketsState extends State<ShowTicketsView> {
     try {
       String token = Provider.of<TokenProvider>(context, listen: false).token;
       List<Ticket> fetchedTickets = await getTickets(status, token);
+      initialLoadCompleted = true;
       return fetchedTickets;
     } catch (error) {
       debugPrint('Error fetching tickets: $error');
@@ -52,7 +55,7 @@ void _onViewPressed(int index) {
     ticketDetail,
     arguments: ticketId,
   );
-}
+} 
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +129,14 @@ void _onViewPressed(int index) {
                     } else {
                       // Show ticket cards when data is available
                       filteredTickets = snapshot.data!;
+                      if (!initialLoadCompleted) {
+                      return const SizedBox
+                          .shrink(); // Hide message during initial load
+                    } else if (filteredTickets.isEmpty) {
+                      return const Center(
+                        child: Text('No Tickets for the selected status'),
+                      );
+                    }
                       return ListView.builder(
                         itemCount: filteredTickets.length,
                         itemBuilder: (context, index) {

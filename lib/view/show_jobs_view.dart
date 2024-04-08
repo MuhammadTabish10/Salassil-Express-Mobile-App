@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:salsel_express/config/token_provider.dart';
+import 'package:salsel_express/constant/awb_status_constants.dart';
 import 'package:salsel_express/constant/routes.dart';
 import 'package:animated_card/animated_card.dart';
 import 'package:salsel_express/model/awb.dart';
@@ -20,19 +21,24 @@ class ShowJobsView extends StatefulWidget {
 
 class _ShowJobsState extends State<ShowJobsView> {
   late Future<List<Awb>> awbsFuture = Future.value([]);
+  late List<Awb> filteredAwb;
+  late User user;
+  String selectedStatus = awbCreated;
+  bool initialLoadCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAwbAndUser();
+    _loadAwbAndUser(selectedStatus);
   }
 
-  void _loadAwbAndUser() async {
+  void _loadAwbAndUser(String status) async {
     try {
-      User user = await fetchLoggedInUser();
-      List<Awb> awbs = await fetchAwbs(true, user.name);
+      user = await fetchLoggedInUser();
+      List<Awb> awbs = await fetchAwbs(status);
       setState(() {
         awbsFuture = Future.value(awbs);
+        initialLoadCompleted = true;
       });
     } catch (e) {
       debugPrint('Error fetching data: $e');
@@ -50,16 +56,21 @@ class _ShowJobsState extends State<ShowJobsView> {
     }
   }
 
-  Future<List<Awb>> fetchAwbs(bool status, String? user) async {
+  Future<List<Awb>> fetchAwbs(String status) async {
     try {
       String token = Provider.of<TokenProvider>(context, listen: false).token;
-      List<Awb> fetchedAwbs =
-          await getAllAwbByAssignedUser(user!, status, token);
-      return fetchedAwbs;
+      return await getAllAwbByAssignedUser(user.id!, status, token);
     } catch (error) {
       debugPrint('Error fetching awbs: $error');
       rethrow;
     }
+  }
+
+  void _onStatusSelected(String status) {
+    setState(() {
+      selectedStatus = status;
+      awbsFuture = fetchAwbs(status);
+    });
   }
 
   void _onViewPressed(int id) {
@@ -114,13 +125,19 @@ class _ShowJobsState extends State<ShowJobsView> {
                 duration: const Duration(milliseconds: 500),
                 child: PopupMenuButton<String>(
                   offset: const Offset(0, 50),
-                  onSelected: (value) {
-                    setState(() {
-                      // selectedStatus = value;
-                    });
-                  },
+                  onSelected: _onStatusSelected,
                   itemBuilder: (BuildContext context) {
-                    return ['All', 'Open', 'Closed'].map((String value) {
+                    return [
+                      awbCreated,
+                      pickedUp,
+                      arrivedInStation,
+                      heldInStation,
+                      departFromStation,
+                      arrivedInHub,
+                      departFromHub,
+                      outForDelivery,
+                      delivered
+                    ].map((String value) {
                       return PopupMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -136,11 +153,11 @@ class _ShowJobsState extends State<ShowJobsView> {
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("selectedStatus"),
-                        Icon(Icons.arrow_drop_down),
+                        Text(selectedStatus),
+                        const Icon(Icons.arrow_drop_down),
                       ],
                     ),
                   ),
@@ -159,21 +176,30 @@ class _ShowJobsState extends State<ShowJobsView> {
                       child: Text('Error: ${snapshot.error}'),
                     );
                   } else if (snapshot.hasData) {
+                    filteredAwb = snapshot.data!;
+                    if (!initialLoadCompleted) {
+                      return const SizedBox
+                          .shrink(); // Hide message during initial load
+                    } else if (filteredAwb.isEmpty) {
+                      return const Center(
+                        child: Text('No AWBs for the selected status'),
+                      );
+                    }
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data!.length,
+                      itemCount: filteredAwb.length,
                       itemBuilder: (context, index) {
                         return AnimatedCard(
                           direction: AnimatedCardDirection.right,
                           duration: const Duration(milliseconds: 500),
                           child: CardWidget(
-                            title: snapshot.data![index].shipperName ?? '',
-                            name: snapshot.data![index].uniqueNumber.toString(),
-                            status: snapshot.data![index].awbStatus ?? '',
+                            title: filteredAwb[index].shipperName ?? '',
+                            name: filteredAwb[index].uniqueNumber.toString(),
+                            status: filteredAwb[index].awbStatus ?? '',
                             button: TextButton(
                               onPressed: () {
-                                _onViewPressed(snapshot.data![index].id ?? 0);
+                                _onViewPressed(filteredAwb[index].id ?? 0);
                               },
                               child: const Text(
                                 'View',
@@ -191,7 +217,7 @@ class _ShowJobsState extends State<ShowJobsView> {
                       },
                     );
                   } else {
-                    return Container(); // Placeholder, adjust as needed
+                    return Container();
                   }
                 },
               ),
