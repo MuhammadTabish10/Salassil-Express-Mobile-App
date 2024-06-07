@@ -90,6 +90,27 @@ Future<List<Awb>> getAllAwbByAssignedUser(
   }
 }
 
+Future<List<Awb>> getAllAwbByAssignedUserId(
+    int userId, String token) async {
+  String apiUrl = getAllAwbByAssignedUserUrl(userId);
+  final Uri uri = Uri.parse(apiUrl);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = json.decode(response.body);
+    return jsonList.map((json) => Awb.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load awbs');
+  }
+}
+
 Future<void> downloadAwbPdf(int awbId) async {
   try {
     if (!(await Permission.storage.isGranted)) {

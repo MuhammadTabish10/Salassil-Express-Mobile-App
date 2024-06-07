@@ -1,6 +1,7 @@
-// const String baseURL = 'http://192.168.0.105:8080/api/';
-const String baseURL = 'https://api.salassilexpress.com/api/';
+const String baseURL = 'http://192.168.0.105:8080/api/';
+// const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
+const String loginAppUrl = '${baseURL}login-app';
 const String createAwbUrl = '${baseURL}awb';
 const String getLoggedInUserUrl = '${baseURL}user/current-user';
 const String getAwbCountByAssignedUserUrl = '${baseURL}awb/count/assigned-user';
@@ -8,6 +9,10 @@ const String getTicketCountUrl = '${baseURL}ticket/count';
 
 String getAllTicketsUrl(String status) {
   return '${baseURL}ticket/ticket-status/$status';
+}
+
+String getAllTicketsWithAllStatusUrl() {
+  return '${baseURL}ticket?status=true';
 }
 
 String getAccountNumberWithCustomerUrl(String status) {
@@ -44,6 +49,10 @@ String getAwbByUniqueNumberUrl(int uniqueNumber) {
 
 String getAwbByAssignedUserAndAwbStatusUrl(int userId, String status) {
   return '${baseURL}awb/assigned-user/status?status=$status&userId=$userId';
+}
+
+String getAllAwbByAssignedUserUrl(int userId) {
+  return '${baseURL}awb/assigned-user/id?id=$userId';
 }
 
 String getAllProductTypeUrl(String status) {

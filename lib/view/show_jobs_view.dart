@@ -23,19 +23,19 @@ class _ShowJobsState extends State<ShowJobsView> {
   late Future<List<Awb>> awbsFuture = Future.value([]);
   late List<Awb> filteredAwb;
   late User user;
-  String selectedStatus = awbCreated;
+  String? selectedStatus = "All";
   bool initialLoadCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAwbAndUser(selectedStatus);
+    _loadAwbAndUser();
   }
 
-  void _loadAwbAndUser(String status) async {
+  void _loadAwbAndUser() async {
     try {
       user = await fetchLoggedInUser();
-      List<Awb> awbs = await fetchAwbs(status);
+      List<Awb> awbs = await fetchAwbsFirstTime(user.id!);
       setState(() {
         awbsFuture = Future.value(awbs);
         initialLoadCompleted = true;
@@ -66,10 +66,24 @@ class _ShowJobsState extends State<ShowJobsView> {
     }
   }
 
-  void _onStatusSelected(String status) {
+  Future<List<Awb>> fetchAwbsFirstTime(int userId) async {
+    try {
+      String token = Provider.of<TokenProvider>(context, listen: false).token;
+      return await getAllAwbByAssignedUserId(user.id!, token);
+    } catch (error) {
+      debugPrint('Error fetching awbs: $error');
+      rethrow;
+    }
+  }
+
+  void _onStatusSelected(String? status) {
     setState(() {
       selectedStatus = status;
-      awbsFuture = fetchAwbs(status);
+      if (status == "All") {
+        awbsFuture = fetchAwbsFirstTime(user.id!);
+    } else {
+        awbsFuture = fetchAwbs(status!);
+    }
     });
   }
 
@@ -123,11 +137,12 @@ class _ShowJobsState extends State<ShowJobsView> {
               AnimatedCard(
                 direction: AnimatedCardDirection.top,
                 duration: const Duration(milliseconds: 500),
-                child: PopupMenuButton<String>(
+                child: PopupMenuButton<String?>(
                   offset: const Offset(0, 50),
                   onSelected: _onStatusSelected,
                   itemBuilder: (BuildContext context) {
                     return [
+                      "All",
                       awbCreated,
                       pickedUp,
                       arrivedInStation,
@@ -137,10 +152,10 @@ class _ShowJobsState extends State<ShowJobsView> {
                       departFromHub,
                       outForDelivery,
                       delivered
-                    ].map((String value) {
-                      return PopupMenuItem<String>(
+                    ].map((String? value) {
+                      return PopupMenuItem<String?>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value!),
                       );
                     }).toList();
                   },
@@ -156,7 +171,7 @@ class _ShowJobsState extends State<ShowJobsView> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(selectedStatus),
+                        Text(selectedStatus!),
                         const Icon(Icons.arrow_drop_down),
                       ],
                     ),

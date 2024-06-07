@@ -13,7 +13,7 @@ class LoginService {
 Future<LoginService> login(TokenProvider tokenProvider, String email, String password) async {
   try {
     final response = await http.post(
-      Uri.parse(loginUrl),
+      Uri.parse(loginAppUrl),
       headers: {
         'Content-Type': 'application/json',
       },

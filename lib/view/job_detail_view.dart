@@ -13,6 +13,8 @@ import 'package:salsel_express/service/awb_service.dart';
 import 'package:salsel_express/service/home_service.dart';
 import 'package:salsel_express/util/custom_toast.dart';
 import 'package:salsel_express/util/themes.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:salsel_express/util/whatsapp_utils.dart';
 
 class JobDetailView extends StatefulWidget {
   const JobDetailView({Key? key}) : super(key: key);
@@ -391,6 +393,41 @@ class _JobDetailViewState extends State<JobDetailView> {
                 CustomToast.showAlert(context, 'Failed to download AWB PDF.');
               }
             },
+            iconSize: 28.0,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+          IconButton(
+            icon: const FaIcon(FontAwesomeIcons.whatsapp),
+            onPressed: () async {
+            OverlayEntry? loaderOverlay;
+            try {
+              // Show loader overlay
+              loaderOverlay = OverlayEntry(
+                builder: (BuildContext context) => Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: const Center(
+                    child: SpinKitSpinningLines(
+                      color: primarySwatch,
+                    ),
+                  ),
+                ),
+              );
+              Overlay.of(context).insert(loaderOverlay);
+
+              // Launch WhatsApp
+              await WhatsAppUtils.launchWhatsApp(
+                  awb.recipientsContactNumber!, context);
+
+              // Remove loader overlay when WhatsApp is launched
+              loaderOverlay.remove();
+            } catch (e) {
+              // Remove loader overlay if an error occurs
+              if (loaderOverlay != null) {
+                loaderOverlay.remove();
+              }
+              CustomToast.showAlert(context, 'Failed to launch WhatsApp.');
+            }
+          },
             iconSize: 28.0,
             color: Theme.of(context).colorScheme.onPrimary,
           ),

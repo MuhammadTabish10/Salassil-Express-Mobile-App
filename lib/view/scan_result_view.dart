@@ -67,9 +67,45 @@ class _ScanResultPageState extends State<ScanResultPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Assign AWB Status'),
-          content: StatefulBuilder(
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: contentBox(context),
+        );
+      },
+    );
+  }
+
+  Widget contentBox(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            offset: Offset(0, 10),
+            blurRadius: 10.0,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Text(
+            'Assign AWB Status',
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20.0),
+          StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return DropdownButton<String>(
                 value: _selectedStatus,
@@ -78,69 +114,77 @@ class _ScanResultPageState extends State<ScanResultPage> {
                     _selectedStatus = newValue!;
                   });
                 },
-                items: _productFieldValues
-                    .map<DropdownMenuItem<String>>((ProductFieldValues value) {
-                  return DropdownMenuItem<String>(
-                    value: value.name ?? '',
-                    child: Text(value.name ?? ''),
-                  );
-                }).toList(),
+                items: _productFieldValues.map<DropdownMenuItem<String>>(
+                  (ProductFieldValues value) {
+                    return DropdownMenuItem<String>(
+                      value: value.name ?? '',
+                      child: Text(value.name ?? ''),
+                    );
+                  },
+                ).toList(),
               );
             },
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                // Start loading
-                setState(() {
-                  _isLoading = true;
-                });
-
-                try {
-                  // Get the token
-                  String token =
-                      Provider.of<TokenProvider>(context, listen: false).token;
-
-                  // Call the API to update AWB status
-                  await updateAwbStatusOnScan(
-                      int.parse(
-                          widget.scannedResult), // Convert scannedResult to int
-                      _selectedStatus, // Use the selected status
-                      token);
-
-                  // Stop loading
-                  setState(() {
-                    _isLoading = false;
-                  });
-
-                  // Close the dialog
-                  Navigator.of(context)
-                      .popUntil(ModalRoute.withName(homeRoute));
-                  Navigator.of(context).pushNamed(homeRoute);
-                } catch (e) {
-                  // Stop loading
-                  setState(() {
-                    _isLoading = false;
-                  });
-
-                  debugPrint('Error updating AWB status: $e');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primarySwatch,
+          const SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancel'),
               ),
-              child:
-                  const Text('Assign', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
+              ElevatedButton(
+                onPressed: () async {
+                  // Start loading
+                  setState(() {
+                    _isLoading = true;
+                  });
+
+                  try {
+                    // Get the token
+                    String token =
+                        Provider.of<TokenProvider>(context, listen: false)
+                            .token;
+
+                    // Call the API to update AWB status
+                    await updateAwbStatusOnScan(
+                      int.parse(widget.scannedResult),
+                      _selectedStatus,
+                      token,
+                    );
+
+                    // Stop loading
+                    setState(() {
+                      _isLoading = false;
+                    });
+
+                    // Close the dialog
+                    Navigator.of(context)
+                        .popUntil(ModalRoute.withName(homeRoute));
+                    Navigator.of(context).pushNamed(homeRoute);
+                  } catch (e) {
+                    // Stop loading
+                    setState(() {
+                      _isLoading = false;
+                    });
+
+                    debugPrint('Error updating AWB status: $e');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primarySwatch,
+                ),
+                child: const Text(
+                  'Assign',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
