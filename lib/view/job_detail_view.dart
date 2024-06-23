@@ -50,10 +50,11 @@ class _JobDetailViewState extends State<JobDetailView> {
           (await awbDetailsFuture).uniqueNumber ?? 0, token);
 
       // Set default value of dropdown to AWB status
-      _selectedStatus = awb.awbStatus!;
+      _selectedStatus = awb.pdaScan!;
 
       // Fetch product field values
-      _productFieldValues = await getProductFieldValues('Awb Status', token);
+      _productFieldValues =
+          await getProductFieldValues('Pda Scan For Courier', token);
       setState(() {
         _isLoading = false; // Stop loading
       });
@@ -118,7 +119,7 @@ class _JobDetailViewState extends State<JobDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Edit AWB Status',
+                  'Edit PDA Scan',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -136,7 +137,16 @@ class _JobDetailViewState extends State<JobDetailView> {
                     (ProductFieldValues value) {
                       return DropdownMenuItem<String>(
                         value: value.name ?? '',
-                        child: Text(value.name ?? ''),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: 200.0, // Adjust this as needed
+                          ),
+                          child: Text(
+                            value.name ?? '',
+                            style: const TextStyle(fontSize: 14),
+                            softWrap: false, // Prevents wrapping
+                          ),
+                        ),
                       );
                     },
                   ).toList(),
@@ -174,53 +184,44 @@ class _JobDetailViewState extends State<JobDetailView> {
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        // Start loading
                         setState(() {
                           _isLoading = true;
                         });
 
                         try {
-                          // Get the token
                           String token =
                               Provider.of<TokenProvider>(context, listen: false)
                                   .token;
 
-                          // Check if the status is changed
                           if (_selectedStatus != awb.awbStatus) {
-                            // Call the API to update AWB status with selected status and comment
-                            await updateAwbStatusWithComment(
-                              awb.uniqueNumber ??
-                                  0, // Convert scannedResult to int
-                              _selectedStatus, // Use the selected status
+                            await updatePdaScanWithComment(
+                              awb.uniqueNumber ?? 0,
+                              _selectedStatus,
                               commentController.text,
                               token,
                             );
 
-                            // Stop loading
                             setState(() {
                               _isLoading = false;
                             });
 
-                            // Close the dialog
                             Navigator.of(context)
                                 .popUntil(ModalRoute.withName(homeRoute));
                             Navigator.of(context).pushNamed(homeRoute);
                           } else {
-                            // Stop loading
                             setState(() {
                               _isLoading = false;
                             });
 
                             CustomToast.showAlert(context,
-                                'AWB status is already set to $_selectedStatus.');
+                                'Pda Scan is already set to $_selectedStatus.');
                           }
                         } catch (e) {
-                          // Stop loading
                           setState(() {
                             _isLoading = false;
                           });
 
-                          debugPrint('Error updating AWB status: $e');
+                          debugPrint('Error updating Pda Scan: $e');
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -399,35 +400,35 @@ class _JobDetailViewState extends State<JobDetailView> {
           IconButton(
             icon: const FaIcon(FontAwesomeIcons.whatsapp),
             onPressed: () async {
-            OverlayEntry? loaderOverlay;
-            try {
-              // Show loader overlay
-              loaderOverlay = OverlayEntry(
-                builder: (BuildContext context) => Container(
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Center(
-                    child: SpinKitSpinningLines(
-                      color: primarySwatch,
+              OverlayEntry? loaderOverlay;
+              try {
+                // Show loader overlay
+                loaderOverlay = OverlayEntry(
+                  builder: (BuildContext context) => Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: const Center(
+                      child: SpinKitSpinningLines(
+                        color: primarySwatch,
+                      ),
                     ),
                   ),
-                ),
-              );
-              Overlay.of(context).insert(loaderOverlay);
+                );
+                Overlay.of(context).insert(loaderOverlay);
 
-              // Launch WhatsApp
-              await WhatsAppUtils.launchWhatsApp(
-                  awb.recipientsContactNumber!, context);
+                // Launch WhatsApp
+                await WhatsAppUtils.launchWhatsApp(
+                    awb.recipientsContactNumber!, context);
 
-              // Remove loader overlay when WhatsApp is launched
-              loaderOverlay.remove();
-            } catch (e) {
-              // Remove loader overlay if an error occurs
-              if (loaderOverlay != null) {
+                // Remove loader overlay when WhatsApp is launched
                 loaderOverlay.remove();
+              } catch (e) {
+                // Remove loader overlay if an error occurs
+                if (loaderOverlay != null) {
+                  loaderOverlay.remove();
+                }
+                CustomToast.showAlert(context, 'Failed to launch WhatsApp.');
               }
-              CustomToast.showAlert(context, 'Failed to launch WhatsApp.');
-            }
-          },
+            },
             iconSize: 28.0,
             color: Theme.of(context).colorScheme.onPrimary,
           ),
@@ -508,8 +509,7 @@ class _JobDetailViewState extends State<JobDetailView> {
                           child: _buildDetailsSection(
                             'Awb Status Details',
                             [
-                              _buildDetailItem(
-                                  'Awb Status', awbHistory?.awbStatus),
+                              _buildDetailItem('Pda Scan', awbHistory?.pdaScan),
                               _buildDetailItem(
                                   'Awb Comment', awbHistory?.comment),
                             ],

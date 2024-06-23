@@ -75,6 +75,11 @@ String updateAwbStatusWithCommentUrl(String status, int uniqueNumber, String com
     return '${baseURL}awb/awb-status/unique-number/comment?comment=$comment&status=$status&uniqueNumber=$uniqueNumber';
 }
 
+String updatePdaScanWithCommentUrl(String status, int uniqueNumber, String comment){
+    return '${baseURL}awb/pda-scan/unique-number/comment?comment=$comment&status=$status&uniqueNumber=$uniqueNumber';
+}
+
+
 String updateCommentInAwbHistoryUrl(int awbId, String comment){
     return '${baseURL}awb-shipping-history/update-comment?comment=$comment&awbId=$awbId';
 }

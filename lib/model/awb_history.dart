@@ -5,6 +5,7 @@ class AwbHistory {
   final int? id;
   final String? comment;
   final String? awbStatus;
+  final String? pdaScan;
   final Awb? awb;
   final User? statusUpdateByUser;
 
@@ -14,6 +15,7 @@ class AwbHistory {
     this.awb,
     this.statusUpdateByUser,
     this.awbStatus,
+    this.pdaScan,
   });
 
   factory AwbHistory.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class AwbHistory {
       id: json['id'],
       comment: json['comment'],
       awbStatus: json['awbStatus'],
+      pdaScan: json['pdaScan'],
       statusUpdateByUser: json['statusUpdateByUser'] != null ? User.fromJson(json['statusUpdateByUser']) : null,
       awb: json['awb'] != null ? Awb.fromJson(json['awb']) : null,
     );
@@ -33,6 +36,7 @@ class AwbHistory {
       'awb': awb?.toJson(),
       'statusUpdateByUser': statusUpdateByUser?.toJson(),
       'awbStatus': awbStatus,
+      'pdaScan': pdaScan,
     };
   }
 }

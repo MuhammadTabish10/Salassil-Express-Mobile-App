@@ -40,7 +40,7 @@ class Awb {
   final bool? emailFlag;
   final String? awbUrl;
   final String? awbStatus;
-
+  final String? pdaScan;
 
   const Awb({
     this.id,
@@ -80,6 +80,7 @@ class Awb {
     this.emailFlag,
     this.awbUrl,
     this.awbStatus,
+    this.pdaScan
   });
 
   factory Awb.fromJson(Map<String, dynamic> json) {
@@ -124,6 +125,7 @@ class Awb {
       emailFlag: json['emailFlag'],
       awbUrl: json['awbUrl'],
       awbStatus: json['awbStatus'],
+      pdaScan: json['pdaScan']
     );
   }
 
@@ -170,6 +172,7 @@ class Awb {
       'emailFlag': emailFlag,
       'awbUrl': awbUrl,
       'awbStatus': awbStatus,
+      'pdaScan': pdaScan
     };
   }
 

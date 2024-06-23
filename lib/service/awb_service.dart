@@ -7,6 +7,7 @@ import 'package:salsel_express/model/awb.dart';
 import 'package:salsel_express/model/awb_history.dart';
 import 'package:salsel_express/model/city.dart';
 import 'package:salsel_express/model/country.dart';
+import 'package:salsel_express/model/product_field_values.dart';
 import 'package:salsel_express/model/product_type.dart';
 import 'package:salsel_express/model/service_type.dart';
 
@@ -301,9 +302,9 @@ Future<AwbHistory> getAwbHistoryWithComment(int id, String token) async {
   }
 }
 
-Future<void> updateAwbStatusWithComment(
+Future<void> updatePdaScanWithComment(
     int uniqueNumber, String status, String comment, String token) async {
-  String apiUrl = updateAwbStatusWithCommentUrl(status, uniqueNumber, comment);
+  String apiUrl = updatePdaScanWithCommentUrl(status, uniqueNumber, comment);
   final Uri uri = Uri.parse(apiUrl);
 
   final response = await http.put(
@@ -315,7 +316,6 @@ Future<void> updateAwbStatusWithComment(
   );
 
   if (response.statusCode == 200) {
-    print(response);
   } else {
     throw Exception('Failed to update AWB Status: ${response.statusCode}');
   }
@@ -334,7 +334,6 @@ Future<void> updateComment(int id, String comment, String token) async {
   );
 
   if (response.statusCode == 200) {
-    print(response);
   } else {
     throw Exception('Failed to update AWB Comment: ${response.statusCode}');
   }

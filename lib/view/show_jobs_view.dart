@@ -81,9 +81,9 @@ class _ShowJobsState extends State<ShowJobsView> {
       selectedStatus = status;
       if (status == "All") {
         awbsFuture = fetchAwbsFirstTime(user.id!);
-    } else {
+      } else {
         awbsFuture = fetchAwbs(status!);
-    }
+      }
     });
   }
 
@@ -225,7 +225,7 @@ class _ShowJobsState extends State<ShowJobsView> {
                               ),
                             ),
                             onTap: () {
-                              // Handle tapping on a ticket card, if needed
+                              _onViewPressed(filteredAwb[index].id ?? 0);
                             },
                           ),
                         );
