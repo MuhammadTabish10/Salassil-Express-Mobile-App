@@ -1,5 +1,5 @@
-const String baseURL = 'http://192.168.0.105:8080/api/';
-// const String baseURL = 'https://api.salassilexpress.com/api/';
+// const String baseURL = 'http://192.168.0.105:8080/api/';
+const String baseURL = 'https://api.salassilexpress.com/api/';
 const String loginUrl = '${baseURL}login';
 const String loginAppUrl = '${baseURL}login-app';
 const String createAwbUrl = '${baseURL}awb';
